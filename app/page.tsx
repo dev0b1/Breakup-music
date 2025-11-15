@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FaArrowRight } from "react-icons/fa";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import AnimatedCounter from "@/components/AnimatedCounter";
 
 export default function HomePage() {
   return (
@@ -13,24 +14,51 @@ export default function HomePage() {
       
       <main className="pt-24">
         {/* Hero Section */}
-        <section className="section-container">
-          <div className="max-w-5xl mx-auto text-center space-y-8">
+        <section className="section-container relative">
+          <div className="absolute inset-0 bg-black -z-10"></div>
+          <div className="max-w-5xl mx-auto text-center space-y-8 relative z-10">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-tight px-4"
             >
-              <span className="text-gradient">Turn Your Breakup</span>
+              <motion.span 
+                className="text-gradient inline-block"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                Turn Your Breakup
+              </motion.span>
               <br />
-              <span className="text-gradient">Into a Savage</span>
+              <motion.span 
+                className="text-gradient inline-block"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                Into a Savage
+              </motion.span>
               <br />
-              <span className="text-white">30-Second</span>{" "}
-              <span className="text-gradient">Roast Song</span>
+              <motion.span
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                className="inline-block"
+              >
+                <span className="text-white">30-Second</span>{" "}
+                <span className="text-gradient">Roast Song</span>
+              </motion.span>
               <br />
-              <span className="text-white flex items-center justify-center gap-4 mt-4">
+              <motion.span 
+                className="text-white flex items-center justify-center gap-4 mt-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
+              >
                 In Seconds 🔥
-              </span>
+              </motion.span>
             </motion.h1>
             
             <motion.p
@@ -85,7 +113,8 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 viewport={{ once: true }}
-                className="card hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-exroast-pink/20 to-red-900/20 border-exroast-pink"
+                whileHover={{ scale: 1.05, rotate: -2 }}
+                className="card hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-exroast-pink/20 to-red-900/20 border-exroast-pink cursor-pointer"
               >
                 <div className="text-7xl mb-4 animate-fire">🔥</div>
                 <h3 className="text-3xl font-black text-white mb-2">Petty Roast</h3>
@@ -98,7 +127,8 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
                 viewport={{ once: true }}
-                className="card hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-exroast-gold/20 to-yellow-900/20 border-exroast-gold"
+                whileHover={{ scale: 1.05, rotate: 2 }}
+                className="card hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-exroast-gold/20 to-yellow-900/20 border-exroast-gold cursor-pointer"
               >
                 <div className="text-7xl mb-4">👑</div>
                 <h3 className="text-3xl font-black text-white mb-2">Glow-Up Flex</h3>
@@ -117,9 +147,12 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
+              whileHover={{ scale: 1.05, rotate: 2 }}
               className="card text-center"
             >
-              <div className="text-5xl font-black text-exroast-pink mb-2">50K+</div>
+              <div className="text-5xl font-black text-exroast-pink mb-2">
+                <AnimatedCounter end={50000} suffix="+" duration={2.5} />
+              </div>
               <p className="text-exroast-gold font-bold">Exes roasted this week</p>
             </motion.div>
             <motion.div
@@ -127,9 +160,12 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               viewport={{ once: true }}
+              whileHover={{ scale: 1.05, rotate: -2 }}
               className="card text-center"
             >
-              <div className="text-5xl font-black text-exroast-pink mb-2">2M+</div>
+              <div className="text-5xl font-black text-exroast-pink mb-2">
+                <AnimatedCounter end={2.1} suffix="M+" decimals={1} duration={2.5} />
+              </div>
               <p className="text-exroast-gold font-bold">TikTok views</p>
             </motion.div>
             <motion.div
@@ -137,9 +173,12 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
+              whileHover={{ scale: 1.05, rotate: 2 }}
               className="card text-center"
             >
-              <div className="text-5xl font-black text-exroast-pink mb-2">100%</div>
+              <div className="text-5xl font-black text-exroast-pink mb-2">
+                <AnimatedCounter end={100} suffix="%" duration={2} />
+              </div>
               <p className="text-exroast-gold font-bold">Savage guarantee</p>
             </motion.div>
           </div>
@@ -183,9 +222,16 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
+                whileHover={{ y: -10 }}
                 className="card text-center"
               >
-                <div className="text-7xl mb-4">{item.icon}</div>
+                <motion.div 
+                  className="text-7xl mb-4"
+                  whileHover={{ scale: 1.2, rotate: 10 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  {item.icon}
+                </motion.div>
                 <div className="text-sm font-black text-exroast-gold mb-2">
                   STEP {item.step}
                 </div>
@@ -238,9 +284,16 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
+                whileHover={{ scale: 1.05, y: -5 }}
                 className="card text-center hover:shadow-2xl transition-all duration-300"
               >
-                <div className="text-6xl mb-4">{benefit.icon}</div>
+                <motion.div 
+                  className="text-6xl mb-4"
+                  whileHover={{ scale: 1.3, rotate: 15 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  {benefit.icon}
+                </motion.div>
                 <h3 className="text-xl font-black text-white mb-3">
                   {benefit.title}
                 </h3>

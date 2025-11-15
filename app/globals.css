@@ -103,10 +103,9 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(to right, #ff006e, #ffd23f);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ff006e;
+  font-weight: 900;
+  text-shadow: none;
 }
 
 .glass-effect {
@@ -122,10 +121,9 @@ body {
 }
 
 .text-gradient-soft {
-  background: linear-gradient(to right, #ff006e, #ff8c00);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ff006e;
+  font-weight: 800;
+  text-shadow: none;
 }
 
 @keyframes fire-flicker {
