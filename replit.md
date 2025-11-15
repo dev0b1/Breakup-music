@@ -5,7 +5,20 @@ HeartHeal is a Next.js web application for generating personalized AI breakup so
 
 ## Recent Changes (November 15, 2025)
 
-### Latest Updates - Rebranding & Landing Page Redesign (November 15, 2025)
+### Latest Updates - Viral Features Implementation (November 15, 2025)
+- ✅ **Analysis Screen for Chat Uploads** - Shows red flag level (Low/Medium/High), heartbreak intensity (7-10), and recommended vibe after screenshot upload with 3-5 second loading animation
+- ✅ **Enhanced UX - Character Counter** - Live character counter (0/500) on story textarea with maxLength enforcement
+- ✅ **Enhanced UX - Mode Examples** - Added one-line examples under each mode:
+  - Sad: "Why wasn't I enough?"
+  - Savage: "Your loss, my glow-up"
+  - Healing: "I'm better without you"
+  - Vibe: "It is what it is"
+  - Meme: "Red flags? I collected them all"
+- ✅ **First-Time User Experience** - Free first song (20 sec preview) with subscription modal after playback
+- ✅ **Subscription Modal** - Appears once after first song preview ends, uses localStorage to track, shows benefits and $9/month pricing
+- ✅ **Mobile Responsive** - All new features optimized for mobile devices
+
+### Previous Updates - Rebranding & Landing Page Redesign (November 15, 2025)
 - ✅ **Rebranded to HeartHeal** - Updated all branding from "Breakup Song Generator" to "HeartHeal"
 - ✅ **Redesigned landing page** - High-conversion design with emotional headlines, social proof, benefits-focused sections
 - ✅ **Added onboarding modal** - Interactive 3-step wizard: emotional check-in → story input → mode selection
@@ -61,14 +74,16 @@ HeartHeal is a Next.js web application for generating personalized AI breakup so
 ### Components
 - `Header` - Navigation with logo and links
 - `Footer` - Links and social media
-- `StyleSelector` - Choose song vibe (Sad/Savage/Healing)
+- `StyleSelector` - Choose song vibe (Sad/Savage/Healing/Vibe/Meme)
 - `SongPlayer` - Audio playback with controls
-- `LyricsOverlay` - Animated scrolling lyrics synchronized to music (NEW)
-- `AnimatedBackground` - Floating hearts, musical notes, gradient animations (NEW)
+- `LyricsOverlay` - Animated scrolling lyrics synchronized to music
+- `AnimatedBackground` - Floating hearts, musical notes, gradient animations
+- `AnalysisScreen` - Chat screenshot analysis with red flags, heartbreak intensity, recommended vibe (NEW)
+- `SubscriptionModal` - First-time user subscription prompt after preview (NEW)
 - `SubscriptionCTA` - Pricing tiers and checkout
 - `LoadingAnimation` - Spinning musical notes animation
 - `LoadingProgress` - Progress indicator for song generation
-- `FileUpload` - Screenshot upload component
+- `FileUpload` - Screenshot upload component with preview thumbnail
 - `SocialShareButtons` - Share to social platforms
 - `PaddleLoader` - Paddle.js SDK initialization
 
