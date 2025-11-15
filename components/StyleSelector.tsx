@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { FaSadTear, FaFire, FaSeedling, FaMusic, FaLaugh } from "react-icons/fa";
+import { FaFire, FaCrown } from "react-icons/fa";
 import clsx from "clsx";
 
-export type SongStyle = "sad" | "savage" | "healing" | "vibe" | "meme";
+export type SongStyle = "petty" | "glowup";
 
 interface StyleSelectorProps {
   selected: SongStyle;
@@ -13,59 +13,34 @@ interface StyleSelectorProps {
 
 const styles = [
   {
-    id: "sad" as SongStyle,
-    name: "Sad",
-    icon: FaSadTear,
-    description: "Pour your heart out",
-    color: "from-blue-400 to-blue-600",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-400",
-  },
-  {
-    id: "savage" as SongStyle,
-    name: "Savage",
+    id: "petty" as SongStyle,
+    name: "Petty Roast",
     icon: FaFire,
-    description: "Unleash your rage",
-    color: "from-red-500 to-orange-600",
-    bgColor: "bg-red-50",
-    borderColor: "border-red-400",
+    description: "Savage, brutal, hilarious roast 🔥",
+    color: "from-exroast-pink to-red-600",
+    bgColor: "bg-exroast-pink/10",
+    borderColor: "border-exroast-pink",
+    example: "They thought they were the catch? LOL",
   },
   {
-    id: "healing" as SongStyle,
-    name: "Healing",
-    icon: FaSeedling,
-    description: "Find your peace",
-    color: "from-green-400 to-emerald-600",
-    bgColor: "bg-green-50",
-    borderColor: "border-green-400",
-  },
-  {
-    id: "vibe" as SongStyle,
-    name: "Vibe",
-    icon: FaMusic,
-    description: "Chill & relatable",
-    color: "from-purple-400 to-indigo-600",
-    bgColor: "bg-purple-50",
-    borderColor: "border-purple-400",
-  },
-  {
-    id: "meme" as SongStyle,
-    name: "Meme",
-    icon: FaLaugh,
-    description: "Make it funny",
-    color: "from-yellow-400 to-orange-500",
-    bgColor: "bg-yellow-50",
-    borderColor: "border-yellow-400",
+    id: "glowup" as SongStyle,
+    name: "Glow-Up Flex",
+    icon: FaCrown,
+    description: "Upbeat victory anthem 👑",
+    color: "from-exroast-gold to-yellow-400",
+    bgColor: "bg-exroast-gold/10",
+    borderColor: "border-exroast-gold",
+    example: "I'm thriving, they're crying",
   },
 ];
 
 export function StyleSelector({ selected, onChange }: StyleSelectorProps) {
   return (
     <div className="space-y-4">
-      <label className="block text-lg font-semibold text-gray-700">
-        Choose Your Vibe
+      <label className="block text-xl font-black text-exroast-gold">
+        Choose Your Vibe 🎵
       </label>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {styles.map((style) => {
           const Icon = style.icon;
           const isSelected = selected === style.id;
@@ -77,26 +52,27 @@ export function StyleSelector({ selected, onChange }: StyleSelectorProps) {
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.95 }}
               className={clsx(
-                "p-6 rounded-2xl border-2 transition-all duration-300 text-left",
+                "p-8 rounded-2xl border-4 transition-all duration-300 text-left",
                 isSelected
-                  ? `${style.bgColor} ${style.borderColor} shadow-lg`
-                  : "bg-white border-gray-200 hover:border-gray-300 shadow-md"
+                  ? `${style.bgColor} ${style.borderColor} shadow-2xl shadow-${style.id === 'petty' ? 'exroast-pink' : 'exroast-gold'}/50`
+                  : "bg-exroast-black/50 border-gray-700 hover:border-gray-600 shadow-xl"
               )}
             >
-              <div className="flex flex-col items-center space-y-3">
+              <div className="flex flex-col items-center space-y-4">
                 <div
                   className={clsx(
-                    "p-4 rounded-full bg-gradient-to-br",
+                    "p-6 rounded-full bg-gradient-to-br",
                     style.color
                   )}
                 >
-                  <Icon className="text-3xl text-white" />
+                  <Icon className="text-5xl text-white" />
                 </div>
                 <div className="text-center">
-                  <h3 className="font-bold text-lg text-gray-900">
+                  <h3 className="font-black text-2xl text-white mb-2">
                     {style.name}
                   </h3>
-                  <p className="text-sm text-gray-600">{style.description}</p>
+                  <p className="text-base text-gray-300 mb-2">{style.description}</p>
+                  <p className="text-sm italic text-gray-400">"{style.example}"</p>
                 </div>
               </div>
             </motion.button>

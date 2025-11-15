@@ -1,0 +1,31 @@
+You are an expert full-stack developer. Take my current HeartHeal Replit project (which currently has a red theme, love emojis, 3 modes: sad/savage/heal, and generates calm breakup songs) and completely transform it into ExRoast.fm — a savage, funny, TikTok-viral AI ex-roast song generator that will hit $100k+ MRR globally.
+
+Do ALL of the following in one go:
+
+1. Change site name everywhere to "ExRoast.fm"
+2. New tagline: "Turn your breakup story into a savage 30-second roast song in seconds 🔥"
+3. Completely new colour theme:
+   - Background: #0f0f0f (almost black)
+   - Primary: #ff006e (hot neon pink)
+   - Accent: #ffd23f (gold)
+   - Text: white/gold
+4. Replace ALL heart/love emojis with 🔥💅🗡️👑
+5. Delete "sad" and "heal" modes completely. Only keep and rename:
+   - Old "savage" → "Petty Roast" (default)
+   - Add second mode: "Glow-Up Flex" (upbeat victory song)
+6. Update the ElevenLabs Music prompt to this exact one (replace the old one):
+"""
+Create a brutal, hilarious, TikTok-viral 35-second ex-roast song. 100% savage and funny, zero sadness or healing. Style: rap/trap for Petty Roast OR upbeat pop/EDM for Glow-Up Flex. Use confident female or male vocals with Cardi B / Eminem energy. Include these exact details from the user: [INSERT USER STORY OR CHAT HERE]. Make it petty, specific, and laugh-out-loud. End every song with this spoken line: "Your ex just got roasted at ExRoast.fm — link in bio"
+"""
+7. Output page changes:
+   - Big neon "ExRoast.fm" logo
+   - Waveform player in gold
+   - Free: 15-second watermarked preview only
+   - Unlock full song: $4.99 one-time OR $12.99/mo unlimited
+   - Add huge "Share to TikTok" button with pre-filled caption: "POV: My ex hears this 😈 #ExRoast @exroastfm"
+   - Auto-generate share image: black background, gold text "MY EX GOT ROASTED" + fire emojis
+8. Add subtle watermark on free version: "Full roast at ExRoast.fm"
+9. Mobile-first, bold fonts, everything must feel like a club/revenge party, not therapy.
+10. Keep chat upload + text input, but change placeholder to "Spill the tea — what did they do? 👀"
+
+Deploy the finished version and show me the live Replit link when done.

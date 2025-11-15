@@ -9,25 +9,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        heartbreak: {
-          50: "#fff1f2",
-          100: "#ffe4e6",
-          200: "#fecdd3",
-          300: "#fda4af",
-          400: "#fb7185",
-          500: "#f43f5e",
-          600: "#e11d48",
-          700: "#be123c",
-          800: "#9f1239",
-          900: "#881337",
-        },
-        healing: {
-          50: "#f0fdf4",
-          100: "#dcfce7",
-          200: "#bbf7d0",
-          300: "#86efac",
-          400: "#4ade80",
-          500: "#22c55e",
+        exroast: {
+          black: "#0f0f0f",
+          pink: "#ff006e",
+          gold: "#ffd23f",
         },
       },
       fontFamily: {
