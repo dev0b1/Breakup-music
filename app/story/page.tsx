@@ -185,7 +185,7 @@ export default function StoryPage() {
                   </label>
                   <FileUpload
                     onFileSelect={(file) => setScreenshot(file)}
-                    currentFile={screenshot}
+                    onClear={() => setScreenshot(null)}
                   />
                   <p className="text-sm text-gray-400 italic">
                     💡 Upload a chat screenshot for max petty energy

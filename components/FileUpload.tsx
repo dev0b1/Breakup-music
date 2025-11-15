@@ -43,13 +43,13 @@ export default function FileUpload({
     setError(null);
 
     if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file');
+      setError('Please upload an image file 📸');
       return false;
     }
 
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      setError(`File size must be less than ${maxSizeMB}MB`);
+      setError(`File too big! Keep it under ${maxSizeMB}MB 🔥`);
       return false;
     }
 
@@ -108,10 +108,10 @@ export default function FileUpload({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className={`
-              relative border-2 border-dashed rounded-xl p-8 md:p-12 text-center cursor-pointer
-              transition-all duration-300 bg-white hover:bg-gray-50
-              ${isDragging ? 'border-rose-400 bg-rose-50' : 'border-gray-300'}
-              ${error ? 'border-red-400' : ''}
+              relative border-3 border-dashed rounded-xl p-8 md:p-12 text-center cursor-pointer
+              transition-all duration-300 bg-exroast-black/50
+              ${isDragging ? 'border-exroast-pink bg-exroast-pink/10' : 'border-gray-700'}
+              ${error ? 'border-red-500' : ''}
             `}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
@@ -131,23 +131,23 @@ export default function FileUpload({
               animate={isDragging ? { scale: 1.1 } : { scale: 1 }}
               className="flex flex-col items-center gap-4"
             >
-              <div className="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center">
-                <FiUpload className="w-8 h-8 text-rose-500" />
+              <div className="w-16 h-16 rounded-full bg-exroast-pink/20 flex items-center justify-center">
+                <FiUpload className="w-8 h-8 text-exroast-pink" />
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {isDragging ? 'Drop your screenshot here' : 'Upload Chat Screenshot'}
+                <h3 className="text-lg font-black text-white mb-2">
+                  {isDragging ? 'Drop the receipts! 🔥' : 'Drop Those Receipts 📸'}
                 </h3>
-                <p className="text-gray-600 text-sm mb-1">
-                  Drag & drop or click to browse
+                <p className="text-exroast-gold text-sm mb-1 font-bold">
+                  Drag & drop or click to upload
                 </p>
-                <p className="text-gray-500 text-xs">
-                  Supports WhatsApp, iMessage, Instagram DMs (Max {maxSizeMB}MB)
+                <p className="text-gray-400 text-xs">
+                  WhatsApp, iMessage, Instagram DMs (Max {maxSizeMB}MB)
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className="flex items-center gap-2 text-xs text-gray-500 font-bold">
                 <FiImage className="w-4 h-4" />
                 <span>PNG, JPG, JPEG, WebP</span>
               </div>
@@ -161,7 +161,7 @@ export default function FileUpload({
             exit={{ opacity: 0, scale: 0.95 }}
             className="relative"
           >
-            <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 bg-white">
+            <div className="relative rounded-xl overflow-hidden border-2 border-exroast-gold bg-exroast-black">
               <img
                 src={preview}
                 alt="Chat screenshot preview"
@@ -173,15 +173,15 @@ export default function FileUpload({
                   e.stopPropagation();
                   handleClear();
                 }}
-                className="absolute top-3 right-3 w-8 h-8 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center transition-colors shadow-lg"
+                className="absolute top-3 right-3 w-10 h-10 bg-exroast-pink hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors shadow-lg"
                 aria-label="Remove image"
               >
-                <FiX className="w-5 h-5" />
+                <FiX className="w-6 h-6" />
               </button>
             </div>
 
-            <p className="text-center text-sm text-gray-600 mt-3">
-              Screenshot uploaded successfully
+            <p className="text-center text-sm text-exroast-gold mt-3 font-bold">
+              Receipts uploaded! Ready to roast 🔥
             </p>
           </motion.div>
         )}
@@ -191,7 +191,7 @@ export default function FileUpload({
         <motion.p
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-red-500 text-sm mt-3 text-center"
+          className="text-red-400 text-sm mt-3 text-center font-bold"
         >
           {error}
         </motion.p>
