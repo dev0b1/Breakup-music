@@ -223,7 +223,7 @@ export default function PreviewPage() {
                       <SocialShareButtons 
                         url={shareUrl}
                         title={song.title}
-                        message={`Check out my AI-generated breakup song: ${song.title}`}
+                        message={`Check out my AI-generated HeartHeal song: ${song.title}`}
                       />
                     </div>
                   </div>

@@ -19,7 +19,7 @@ export function SocialShareButtons({ songId, songTitle, url, title, message }: S
     ? `${window.location.origin}/share/${songId}`
     : "");
   
-  const shareText = message || `Check out my AI-generated breakup song: "${title || songTitle}" 💔🎵`;
+  const shareText = message || `Check out my AI-generated HeartHeal song: "${title || songTitle}" 💔🎵`;
 
   const handleTikTok = () => {
     const tiktokUrl = `https://www.tiktok.com/upload?caption=${encodeURIComponent(shareText + " " + shareUrl)}`;

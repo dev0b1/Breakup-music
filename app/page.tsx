@@ -54,7 +54,7 @@ export default function HomePage() {
     { 
       name: "Meme", 
       emoji: "😂", 
-      description: "Laugh it off. Funny, quirky breakup songs.",
+      description: "Laugh it off. Funny, quirky healing songs.",
       style: "meme",
       gradient: "from-yellow-500 to-orange-500"
     },

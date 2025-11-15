@@ -48,9 +48,9 @@ export async function POST(request: NextRequest) {
       console.error('OpenRouter prompt generation failed:', promptError);
       
       promptResult = {
-        title: `${style.charAt(0).toUpperCase() + style.slice(1)} Breakup Song`,
-        tags: `${style}, emotional, heartbreak`,
-        prompt: `A song about heartbreak and moving on.\n${story.substring(0, 200)}`,
+        title: `${style.charAt(0).toUpperCase() + style.slice(1)} HeartHeal Song`,
+        tags: `${style}, emotional, heartbreak, healing`,
+        prompt: `A ${style} song about heartbreak, emotional healing, and moving forward.\n${story.substring(0, 200)}`,
       };
       
       console.log('Using fallback prompt template');

@@ -63,7 +63,7 @@ Return your response in this exact JSON format:
             },
             {
               role: 'user',
-              content: `Clean up this text and create a Suno AI prompt for a ${params.style} breakup song:\n\n${params.extractedText}`,
+              content: `Clean up this text and create a Suno AI prompt for a ${params.style} HeartHeal song:\n\n${params.extractedText}`,
             },
           ],
           response_format: { type: 'json_object' },
@@ -97,7 +97,7 @@ Return your response in this exact JSON format:
       
       return {
         prompt: parsed.prompt || parsed.lyrics || parsed.lyric || '',
-        title: parsed.title || `${params.style.charAt(0).toUpperCase() + params.style.slice(1)} Breakup Song`,
+        title: parsed.title || `${params.style.charAt(0).toUpperCase() + params.style.slice(1)} HeartHeal Anthem`,
         tags: parsed.tags || parsed.genre || defaultTags,
       };
     } catch (error: any) {

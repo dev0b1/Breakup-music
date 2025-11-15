@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
 
-export const alt = 'Breakup Song Generator';
+export const alt = 'HeartHeal';
 export const size = {
   width: 1200,
   height: 630,
@@ -43,7 +43,7 @@ export default async function Image({ params }: { params: { id: string } }) {
             marginBottom: 20,
           }}
         >
-          Breakup Song Generator
+          HeartHeal
         </div>
         <div
           style={{
@@ -51,7 +51,7 @@ export default async function Image({ params }: { params: { id: string } }) {
             color: '#6b7280',
           }}
         >
-          Turn your heartbreak into music with AI
+          Turn your pain into songs that heal
         </div>
       </div>
     ),
