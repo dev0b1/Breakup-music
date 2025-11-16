@@ -146,6 +146,15 @@ body {
 }
 
 .text-gradient {
+  background: linear-gradient(to right, #ff006e, #ffd23f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+  text-shadow: none;
+}
+
+.text-gold-hero {
   color: #ffd23f;
   font-weight: 900;
   text-shadow: 0 0 8px rgba(255, 0, 110, 0.4);

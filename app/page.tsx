@@ -24,15 +24,15 @@ export default function HomePage() {
         <section className="section-container relative">
           <div className="absolute inset-0 bg-black -z-10"></div>
           <div className="max-w-5xl mx-auto text-center space-y-8 relative z-10">
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-tight px-4 text-gradient">
-              <TypewriterText text="Turn Your Breakup" className="text-gradient inline-block" delay={200} />
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-tight px-4 text-gold-hero">
+              <TypewriterText text="Turn Your Breakup" className="text-gold-hero inline-block" delay={200} />
               <br />
-              <TypewriterText text="Into a Savage" className="text-gradient inline-block" delay={1000} />
+              <TypewriterText text="Into a Savage" className="text-gold-hero inline-block" delay={1000} />
               <br />
-              <TypewriterText text="30-Second Roast Song" className="text-gradient inline-block" delay={1800} />
+              <TypewriterText text="30-Second Roast Song" className="text-gold-hero inline-block" delay={1800} />
               <br />
               <motion.span 
-                className="text-gradient flex items-center justify-center gap-4 mt-4"
+                className="text-gold-hero flex items-center justify-center gap-4 mt-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 2.6 }}
