@@ -6,6 +6,7 @@ import { FaCheck, FaStar, FaCrown, FaShieldAlt, FaLock } from "react-icons/fa";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
+import { SINGLE_LABEL, SINGLE_AMOUNT, PREMIUM_LABEL, PREMIUM_AMOUNT } from '@/lib/pricing';
 
 export default function PricingPage() {
   return (
@@ -95,7 +96,7 @@ export default function PricingPage() {
             >
               <h3 className="text-2xl font-bold text-gradient mb-2">One-Time Pro</h3>
               <div className="text-5xl font-bold text-exroast-gold mb-6">
-                $4.99
+                {`$${SINGLE_AMOUNT.toFixed(2)}`}
               </div>
               <p className="text-gray-400 text-sm mb-6">Unlock Your Custom Diss (One-Time Flex)</p>
               <ul className="space-y-4 text-left mb-8">
@@ -149,7 +150,7 @@ export default function PricingPage() {
                 <h3 className="text-2xl font-bold text-gradient">Unlimited Pro</h3>
               </div>
               <div className="text-5xl font-bold text-exroast-gold mb-6">
-                $12.99
+                {`$${PREMIUM_AMOUNT.toFixed(2)}`}
                 <span className="text-xl text-white">/month</span>
               </div>
               <p className="text-gray-400 text-sm mb-6">Unlimited Everything</p>

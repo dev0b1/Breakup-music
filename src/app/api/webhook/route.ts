@@ -3,6 +3,7 @@ import { db } from "@/server/db";
 import { transactions, songs, subscriptions } from "@/src/db/schema";
 import { eq } from "drizzle-orm";
 import { refillCredits } from "@/lib/db-service";
+import { mapPriceIdToAction } from '@/lib/paddle-config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,8 +37,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const transactionId = eventData.data.id || `tx-${Date.now()}`;
-    const existing = await db.select().from(transactions).where(eq(transactions.id, transactionId)).limit(1);
+  const transactionId = eventData.data.id || `tx-${Date.now()}`;
+  const existing = await db.select().from(transactions).where(eq(transactions.id, transactionId)).limit(1);
     
     if (existing.length === 0) {
       await db.insert(transactions).values({
@@ -54,9 +55,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true, note: "Already processed" });
     }
 
+    // Detect price_id if present (Paddle price ids look like `pri_...`) so we can
+    // map purchases to internal actions even when custom_data isn't provided.
+    const priceId = eventData.data.price_id || eventData.data.product_id || eventData.data.plan_id || eventData.data.checkout?.price_id;
+    const priceAction = mapPriceIdToAction(priceId);
+    if (priceAction) {
+      console.log('Detected Paddle price action for priceId=', priceId, priceAction);
+    }
+
     switch (eventData.eventType) {
       case "transaction.completed":
-        await handleTransactionCompleted(eventData.data);
+        await handleTransactionCompleted(eventData.data, priceAction);
         break;
 
       case "subscription.created":
@@ -85,31 +94,44 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleTransactionCompleted(transaction: any) {
+async function handleTransactionCompleted(transaction: any, priceAction: any = null) {
   console.log("Transaction completed:", transaction.id);
-  
-  if (!transaction.custom_data) {
-    console.warn("No custom_data in transaction - skipping fulfillment");
-    return;
+
+  // transaction.custom_data is preferred (client set userId/songId/type)
+  const customData = transaction.custom_data || {};
+  const customType = customData.type;
+  const userId = customData.userId || null;
+
+  // Handle credit purchases: either explicitly marked in custom_data or detected
+  // via priceAction mapping from Paddle price ids.
+  if (customType === 'credit_purchase' || (priceAction && priceAction.kind === 'credits')) {
+    const credits = Number(customData.creditsAmount) || Number(priceAction?.creditsAmount) || 0;
+    if (userId && credits > 0) {
+      await refillCredits(userId, credits);
+      console.log(`Refilled ${credits} credits for user ${userId} from transaction ${transaction.id}`);
+    } else {
+      console.warn('Credit purchase detected but missing userId or credits amount; skipping refill');
+    }
+    // Continue — a transaction can be both a credit purchase and include song info
   }
-  
-  const { songId, userId } = transaction.custom_data;
-  
-  if (songId) {
+
+  // If transaction includes a song purchase, unlock it
+  if (customData.songId) {
+    const songId = customData.songId;
     const songResult = await db.select().from(songs).where(eq(songs.id, songId)).limit(1);
-    
+
     if (songResult.length === 0) {
       console.error(`Song ${songId} not found for transaction ${transaction.id}`);
       return;
     }
-    
+
     const song = songResult[0];
-    
+
     if (song.isPurchased) {
       console.log(`Song ${songId} already purchased - skipping`);
       return;
     }
-    
+
     await db.update(songs)
       .set({
         isPurchased: true,
@@ -118,7 +140,7 @@ async function handleTransactionCompleted(transaction: any) {
         updatedAt: new Date(),
       })
       .where(eq(songs.id, songId));
-    
+
     console.log(`Song ${songId} unlocked for user ${userId || 'anonymous'}`);
   }
 }

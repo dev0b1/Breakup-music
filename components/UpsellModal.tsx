@@ -2,6 +2,12 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaCheck, FaCrown, FaRocket, FaImage } from 'react-icons/fa';
+import {
+  SINGLE_LABEL,
+  SINGLE_BUTTON_TEXT,
+  PREMIUM_LABEL,
+  PREMIUM_BUTTON_TEXT,
+} from '@/lib/pricing';
 
 interface UpsellModalProps {
   isOpen: boolean;
@@ -124,8 +130,8 @@ export function UpsellModal({ isOpen, onClose, onUpgrade }: UpsellModalProps) {
                   onClick={() => onUpgrade('one-time')}
                   className="bg-gray-700 hover:bg-gray-600 text-white font-black py-4 px-6 rounded-full text-lg border-2 border-gray-600 transition-all"
                 >
-                  <div className="text-2xl mb-1">$4.99</div>
-                  <div className="text-sm font-normal">One-Time Full Unlock</div>
+                  <div className="text-2xl mb-1">{SINGLE_LABEL}</div>
+                  <div className="text-sm font-normal">{SINGLE_BUTTON_TEXT}</div>
                 </motion.button>
 
                 <motion.button
@@ -134,8 +140,8 @@ export function UpsellModal({ isOpen, onClose, onUpgrade }: UpsellModalProps) {
                   onClick={() => onUpgrade('unlimited')}
                   className="bg-gradient-to-r from-exroast-pink to-exroast-gold text-white font-black py-4 px-6 rounded-full text-lg border-2 border-exroast-gold transition-all shadow-lg shadow-exroast-pink/50"
                 >
-                  <div className="text-2xl mb-1">$12.99/mo</div>
-                  <div className="text-sm font-normal">Unlimited Roasts + History</div>
+                  <div className="text-2xl mb-1">{PREMIUM_LABEL}</div>
+                  <div className="text-sm font-normal">{PREMIUM_BUTTON_TEXT}</div>
                   <div className="text-xs font-normal mt-1">⭐ Most Popular</div>
                 </motion.button>
               </div>

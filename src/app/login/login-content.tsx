@@ -31,10 +31,12 @@ export default function LoginContent() {
     setError(null);
 
     try {
+      const dest = redirectTo || '/story';
+      const redirectToFull = `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/complete?returnTo=${encodeURIComponent(dest)}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback?redirectTo=${redirectTo}`,
+          redirectTo: redirectToFull,
         },
       });
 

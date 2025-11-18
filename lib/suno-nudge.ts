@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getFallbackMotivation } from './daily-motivations';
 
 export interface NudgeGenerationParams {
   userStory: string;
@@ -183,26 +184,14 @@ export function createSunoNudgeClient(): SunoNudgeAPI {
   const apiKey = process.env.SUNO_API_KEY || '';
   return new SunoNudgeAPI(apiKey);
 }
-
-export const dailySavageQuotes = [
-  "They didn't lose you. You upgraded.",
-  "Your ex is a lesson, not a life sentence 💅",
-  "They're temporary. Your glow-up is permanent 🔥",
-  "Plot twist: You were always the prize 👑",
-  "Their loss, literally everyone else's gain ✨",
-  "Main character energy only. They were just an extra 😈",
-  "You're not healing, you're leveling up 💪",
-  "They left? Good. More room for your upgrade 🚀",
-  "Unbothered. Moisturized. In your lane. Flourishing 💅",
-  "They thought they did something. You're doing EVERYTHING 🔥",
-  "Your next chapter doesn't include them. And that's beautiful ✨",
-  "Recovery? Nah. Revolution 👑",
-  "They're stalking your stories. Let 'em watch the glow-up 👀",
-  "You dodged a bullet. Now dodge their apology text 😏",
-  "From heartbroken to heartbreaker energy 💥"
-];
-
+// Keep the original concise set for deterministic day-based selection, but
+// prefer a richer fallback list from `daily-motivations`.
 export function getDailySavageQuote(dayNumber: number = 1): string {
-  const index = (dayNumber - 1) % dailySavageQuotes.length;
-  return dailySavageQuotes[index];
+  try {
+    return getFallbackMotivation(dayNumber);
+  } catch (e) {
+    // Last-resort hardcoded fallback
+    const hardFallback = "You're the plot twist they didn't see coming.";
+    return hardFallback;
+  }
 }

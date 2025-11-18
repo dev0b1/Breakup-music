@@ -5,6 +5,16 @@ import { FaCheck, FaStar, FaCrown } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import {
+  SINGLE_PRICE_ID,
+  SINGLE_AMOUNT,
+  SINGLE_LABEL,
+  SINGLE_BUTTON_TEXT,
+  PREMIUM_PRICE_ID,
+  PREMIUM_AMOUNT,
+  PREMIUM_LABEL,
+  PREMIUM_BUTTON_TEXT,
+} from "@/lib/pricing";
 
 interface SubscriptionTier {
   id: string;
@@ -17,45 +27,48 @@ interface SubscriptionTier {
   priceId: string;
 }
 
+// Align tiers with the pricing page: One-Time Pro ($4.99) and Unlimited Pro ($12.99/mo)
 const tiers: SubscriptionTier[] = [
   {
-    id: "standard",
-    name: "Standard",
-    price: 9,
-    interval: "month",
-    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_STANDARD || "pri_standard",
+    id: "one-time",
+    name: "One-Time Pro",
+    price: SINGLE_AMOUNT,
+    interval: "one-time",
+    priceId: SINGLE_PRICE_ID || "pri_single",
     icon: FaStar,
     features: [
-      "5 full songs per month",
-      "All song styles (Sad, Savage, Healing)",
-      "HD audio quality",
-      "Social sharing",
-      "Download MP3 files",
+      "Tailored Suno AI song",
+      "Personalized from YOUR story",
+      "Full 30-35s song",
+      "No watermark",
+      "Download MP3",
     ],
   },
   {
-    id: "premium",
-    name: "Premium",
-    price: 19,
+    id: "unlimited",
+    name: "Unlimited Pro",
+    price: PREMIUM_AMOUNT,
     interval: "month",
-    priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_PREMIUM || "pri_premium",
+    priceId: PREMIUM_PRICE_ID || "pri_premium",
     icon: FaCrown,
     popular: true,
     features: [
-      "20 full songs per month",
-      "All song styles (Sad, Savage, Healing)",
-      "HD audio quality",
-      "Social sharing",
-      "Download MP3 files",
-      "AI breakup advice",
-      "No-contact tips & guidance",
-      "Priority support",
-      "Early access to new features",
+      "UNLIMITED personalized songs",
+      "Upload chat screenshots",
+      "AI reads chats for ultra-petty lines",
+      "Unlimited history & saves",
+      "Clean MP3 downloads (no watermark)",
     ],
   },
 ];
 
-export function SubscriptionCTA() {
+interface SubscriptionCTAProps {
+  songId?: string | null;
+  // autoOpenSingle: when true and songId present, immediately open the single-song checkout
+  autoOpenSingle?: boolean;
+}
+
+export function SubscriptionCTA({ songId, autoOpenSingle }: SubscriptionCTAProps) {
   const router = useRouter();
   const supabase = createClientComponentClient();
   const [isLoading, setIsLoading] = useState<string | null>(null);
@@ -75,8 +88,14 @@ export function SubscriptionCTA() {
     try {
       // Check if user is logged in
       if (!user) {
-        // Redirect to login, then to checkout
-        router.push(`/login?redirectTo=/checkout&tier=${tier.id}`);
+        // Trigger OAuth sign-in with Google and redirect to checkout after auth
+        if (typeof window !== 'undefined') {
+          const dest = `/checkout?tier=${tier.id}`;
+          const redirectTo = `${window.location.origin}/auth/complete?returnTo=${encodeURIComponent(dest)}`;
+          await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+        } else {
+          router.push(`/login?redirectTo=/checkout&tier=${tier.id}`);
+        }
         return;
       }
 
@@ -97,12 +116,16 @@ export function SubscriptionCTA() {
         return;
       }
 
-      const isPaddleFormat = /^pri_[0-9a-zA-Z]{20,}$/.test(tier.priceId);
-      if (!isPaddleFormat) {
-        console.warn(`Price ID "${tier.priceId}" doesn't match Paddle format. Expected format: pri_01... (alphanumeric, 20+ chars). Configure real Paddle price IDs in environment variables.`);
+      const isPaddleFormatStrict = /^pri_[0-9a-zA-Z]{20,}$/.test(tier.priceId);
+      const isPaddleFormatLoose = /^pri_[0-9a-zA-Z]{5,}/.test(tier.priceId);
+      if (!isPaddleFormatLoose) {
+        console.warn(`Price ID "${tier.priceId}" doesn't look like a Paddle price ID. Configure real Paddle price IDs in environment variables.`);
         alert("Payment system not fully configured. Please set up real Paddle price IDs.");
         setIsLoading(null);
         return;
+      }
+      if (!isPaddleFormatStrict) {
+        console.warn(`Price ID "${tier.priceId}" appears shorter than mainnet format; this may be a sandbox id and is allowed for dev.`);
       }
 
       (window as any).Paddle.Checkout.open({
@@ -125,12 +148,22 @@ export function SubscriptionCTA() {
     }
   };
 
-  const handleSingleSongPurchase = () => {
+  // Open single-song checkout. If songId is provided, attach it as customData so
+  // the server-side webhook can unlock the correct song on transaction completion.
+  const handleSingleSongPurchase = async (opts?: { songId?: string }) => {
     setIsLoading("single");
-    
+
     try {
       if (!user) {
-        router.push(`/login?redirectTo=/checkout&type=single`);
+        // If user isn't signed in, start Google OAuth and redirect to checkout after auth.
+        const redirectPath = opts?.songId ? `/checkout?songId=${opts.songId}` : `/checkout?type=single`;
+        if (typeof window !== 'undefined') {
+          const redirectTo = `${window.location.origin}/auth/complete?returnTo=${encodeURIComponent(redirectPath)}`;
+          await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+        } else {
+          const redirect = opts?.songId ? `/checkout?songId=${opts.songId}` : `/checkout?type=single`;
+          router.push(`/login?redirectTo=${encodeURIComponent(redirect)}`);
+        }
         return;
       }
 
@@ -145,34 +178,41 @@ export function SubscriptionCTA() {
       }
 
       const singlePriceId = process.env.NEXT_PUBLIC_PADDLE_PRICE_SINGLE;
-      
-      if (!singlePriceId) {
+
+      if (!SINGLE_PRICE_ID && !singlePriceId) {
         console.error("Paddle price ID for single purchase not configured. Please set up your Paddle products.");
         alert("Payment system not configured. Please contact support.");
         setIsLoading(null);
         return;
       }
-
-      const isPaddleFormat = /^pri_[0-9a-zA-Z]{20,}$/.test(singlePriceId);
+      const priceToCheck = singlePriceId || SINGLE_PRICE_ID;
+      const isPaddleFormat = /^pri_[0-9a-zA-Z]{5,}/.test(priceToCheck);
       if (!isPaddleFormat) {
-        console.warn(`Price ID "${singlePriceId}" doesn't match Paddle format. Expected format: pri_01... (alphanumeric, 20+ chars). Configure real Paddle price IDs in environment variables.`);
-        alert("Payment system not fully configured. Please set up real Paddle price IDs.");
-        setIsLoading(null);
-        return;
+        console.warn(`Price ID "${singlePriceId}" doesn't match Paddle format (this is a best-effort check).`);
       }
 
-      (window as any).Paddle.Checkout.open({
+      // Build checkout payload. Paddle SDK will convert camelCase customData -> custom_data
+      const checkoutPayload: any = {
         items: [
-          {
-            priceId: singlePriceId,
-            quantity: 1,
-          },
+          { priceId: priceToCheck, quantity: 1 }
         ],
         settings: {
-          successUrl: `${window.location.origin}/success?type=single`,
-          theme: "light",
-        },
-      });
+          successUrl: `${window.location.origin}/success?type=single${opts?.songId ? `&songId=${opts.songId}` : ''}`,
+          theme: 'light'
+        }
+      };
+
+      // If we have a songId, attach it so webhook can unlock the right song.
+      if (opts?.songId) {
+        checkoutPayload.customData = {
+          songId: opts.songId,
+          userId: user?.id || null,
+        };
+      } else {
+        checkoutPayload.customData = { userId: user?.id || null };
+      }
+
+      (window as any).Paddle.Checkout.open(checkoutPayload);
     } catch (error) {
       console.error("Checkout error:", error);
       alert("Unable to open checkout. Please try again or contact support.");
@@ -180,6 +220,17 @@ export function SubscriptionCTA() {
       setIsLoading(null);
     }
   };
+
+  // If the component was mounted with autoOpenSingle and a songId, open checkout once
+  useEffect(() => {
+    if (autoOpenSingle && songId) {
+      // small next tick to allow Paddle to load
+      setTimeout(() => {
+        handleSingleSongPurchase({ songId });
+      }, 200);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpenSingle, songId, user]);
 
   return (
     <div className="space-y-8">
@@ -204,11 +255,12 @@ export function SubscriptionCTA() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               className={`relative rounded-3xl p-8 ${
-                isPopular
-                  ? "bg-gradient-to-br from-heartbreak-500 to-heartbreak-600 text-white shadow-2xl border-4 border-heartbreak-400 transform scale-105"
-                  : "bg-white border-2 border-gray-200 shadow-lg"
-              }`}
-            >
+                    tier.id === 'one-time'
+                      ? "bg-gray-900/90 text-white shadow-2xl border-2 border-gray-800"
+                      : isPopular
+                      ? "bg-gradient-to-br from-heartbreak-500 to-heartbreak-600 text-white shadow-2xl border-4 border-heartbreak-400 transform scale-105"
+                      : "bg-white border-2 border-gray-200 shadow-lg"
+                  }`}>
               {isPopular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <span className="bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-bold shadow-lg">
@@ -218,21 +270,21 @@ export function SubscriptionCTA() {
               )}
 
               <div className="flex items-center space-x-3 mb-4">
-                <div className={`p-3 rounded-full ${isPopular ? "bg-white/20" : "bg-heartbreak-100"}`}>
-                  <Icon className={`text-2xl ${isPopular ? "text-white" : "text-heartbreak-500"}`} />
+                <div className={`p-3 rounded-full ${tier.id === 'one-time' ? "bg-white/5" : isPopular ? "bg-white/20" : "bg-heartbreak-100"}`}>
+                  <Icon className={`text-2xl ${(isPopular || tier.id === 'one-time') ? "text-white" : "text-heartbreak-500"}`} />
                 </div>
-                <h3 className={`text-2xl font-bold ${isPopular ? "text-white" : "text-gray-900"}`}>
+                <h3 className={`text-2xl font-bold ${(isPopular || tier.id === 'one-time') ? "text-white" : "text-gray-900"}`}>
                   {tier.name}
                 </h3>
               </div>
 
               <div className="mb-6">
                 <div className="flex items-baseline">
-                  <span className={`text-5xl font-bold ${isPopular ? "text-white" : "text-gray-900"}`}>
+                  <span className={`text-5xl font-bold ${(isPopular || tier.id === 'one-time') ? "text-white" : "text-gray-900"}`}>
                     ${tier.price}
                   </span>
-                  <span className={`ml-2 ${isPopular ? "text-white/80" : "text-gray-500"}`}>
-                    /{tier.interval}
+                  <span className={`ml-2 ${(isPopular || tier.id === 'one-time') ? "text-white/80" : "text-gray-500"}`}>
+                    {tier.interval === 'month' ? `/${tier.interval}` : ''}
                   </span>
                 </div>
               </div>
@@ -240,10 +292,8 @@ export function SubscriptionCTA() {
               <ul className="space-y-3 mb-8">
                 {tier.features.map((feature, index) => (
                   <li key={index} className="flex items-start space-x-3">
-                    <FaCheck className={`text-lg mt-0.5 flex-shrink-0 ${
-                      isPopular ? "text-white" : "text-heartbreak-500"
-                    }`} />
-                    <span className={isPopular ? "text-white" : "text-gray-600"}>
+                    <FaCheck className={`text-lg mt-0.5 flex-shrink-0 ${(isPopular || tier.id === 'one-time') ? "text-white" : "text-heartbreak-500"}`} />
+                    <span className={(isPopular || tier.id === 'one-time') ? "text-white" : "text-gray-600"}>
                       {feature}
                     </span>
                   </li>
@@ -253,33 +303,30 @@ export function SubscriptionCTA() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => handleSubscribe(tier)}
+                onClick={() => {
+                  // If this is the one-time product, open the single purchase flow.
+                  // handleSingleSongPurchase will redirect to Google sign-in if needed
+                  // and then to checkout after auth. For other tiers, use subscription flow.
+                  if (tier.id === 'one-time') {
+                    handleSingleSongPurchase({ songId: songId || undefined });
+                  } else {
+                    handleSubscribe(tier);
+                  }
+                }}
                 disabled={isLoading === tier.id}
-                className={`w-full py-4 rounded-full font-semibold text-lg shadow-lg transition-all duration-300 ${
-                  isPopular
-                    ? "bg-white text-heartbreak-600 hover:shadow-xl"
-                    : "bg-gradient-to-r from-heartbreak-500 to-heartbreak-600 text-white hover:shadow-xl"
-                }`}
+                className={
+                  (tier.id === 'one-time' || isPopular)
+                    ? 'btn-primary w-full'
+                    : 'w-full py-4 rounded-full font-semibold text-lg shadow-lg transition-all duration-300 bg-gradient-to-r from-heartbreak-500 to-heartbreak-600 text-white hover:shadow-xl'
+                }
               >
-                {isLoading === tier.id ? "Loading..." : `Subscribe to ${tier.name}`}
+                {isLoading === tier.id ? "Loading..." : (tier.id === 'one-time' ? `Get One Song` : (tier.id === 'unlimited' ? `Go Unlimited` : `Subscribe to ${tier.name}`))}
               </motion.button>
             </motion.div>
           );
         })}
       </div>
-
-      <div className="text-center pt-6 border-t border-gray-200">
-        <p className="text-gray-600 mb-4">Or buy just this one song</p>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleSingleSongPurchase}
-          disabled={isLoading === "single"}
-          className="btn-secondary"
-        >
-          {isLoading === "single" ? "Loading..." : "Buy Single Song - $2.99"}
-        </motion.button>
-      </div>
+      
     </div>
   );
 }

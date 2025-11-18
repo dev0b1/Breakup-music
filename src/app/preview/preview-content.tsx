@@ -37,6 +37,10 @@ export default function PreviewContent() {
   const [showSubscription, setShowSubscription] = useState(false);
   const [showFirstTimeModal, setShowFirstTimeModal] = useState(false);
   const [showUpsellModal, setShowUpsellModal] = useState(false);
+  // If the user selects the one-time unlock from the upsell, we set this to
+  // true so the SubscriptionCTA will auto-open the single-song checkout for
+  // this song (by passing songId + custom data to Paddle).
+  const [pendingSinglePurchase, setPendingSinglePurchase] = useState(false);
   const [showDailyQuoteOptIn, setShowDailyQuoteOptIn] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -78,7 +82,7 @@ export default function PreviewContent() {
   };
 
   const handleDailyQuoteOptIn = async (audioEnabled: boolean) => {
-    const userId = songId || 'anonymous';
+    const userId = songId || '';
     const testQuote = getDailySavageQuote(1);
     
     console.log('Daily Quote Opt-In Flow:');
@@ -91,6 +95,23 @@ export default function PreviewContent() {
       console.log('- Test Audio Generation: User would receive 15-20s motivational audio with lo-fi trap beats');
     }
 
+    // If the user isn't authenticated (we don't have a UUID user id),
+    // save the opt-in locally and avoid calling the server which expects a
+    // real userId (uuid). This prevents server-side failures for anonymous
+    // visitors.
+    const isUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id || '');
+
+    if (!isUuid(userId)) {
+      // Save preferences locally for anonymous users
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('hasSeenDailyQuoteOptIn', 'true');
+        localStorage.setItem('dailyQuotesEnabled', 'true');
+        localStorage.setItem('audioNudgesEnabled', audioEnabled ? 'true' : 'false');
+        alert(`🔥 You're in! Daily savage quotes activated locally.\n\nToday's quote: ${testQuote}\n\n${audioEnabled ? 'Audio nudges (local) enabled - upgrade to Pro for server-sent audio nudges!' : 'Text quotes only - upgrade to Pro for server audio nudges!'}`);
+      }
+      return;
+    }
+
     try {
       const response = await fetch('/api/daily-quotes/opt-in', {
         method: 'POST',
@@ -99,12 +120,12 @@ export default function PreviewContent() {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         console.log('✅ Opt-in successful!');
         console.log('Test quote from API:', data.testQuote);
-        console.log('Today\'s savage quote:', testQuote);
-        
+        console.log("Today's savage quote:", testQuote);
+
         if (typeof window !== 'undefined') {
           localStorage.setItem('hasSeenDailyQuoteOptIn', 'true');
           alert(`🔥 You're in! Daily savage quotes activated.\n\nToday's quote: ${testQuote}\n\n${audioEnabled ? 'Audio nudges enabled - you\'ll get personalized 15s motivation with beats!' : 'Text quotes only - upgrade to Pro for audio nudges!'}`);
@@ -351,7 +372,10 @@ export default function PreviewContent() {
               animate={{ opacity: 1, height: "auto" }}
               transition={{ duration: 0.5 }}
             >
-              <SubscriptionCTA />
+              {/* Pass songId so single-song purchases attach custom_data for webhook fulfillment.
+                  If pendingSinglePurchase is true, autoOpenSingle will cause SubscriptionCTA to
+                  immediately open the single-song checkout. */}
+              <SubscriptionCTA songId={song?.id} autoOpenSingle={pendingSinglePurchase} />
             </motion.div>
           )}
 
@@ -393,7 +417,14 @@ export default function PreviewContent() {
         onUpgrade={(tier) => {
           console.log('Upgrading to:', tier);
           setShowUpsellModal(false);
-          setShowSubscription(true);
+          // If the user selected the one-time full unlock, mark a pending single purchase
+          // so the SubscriptionCTA will auto-open the single-song checkout for this song.
+          if (tier === 'one-time') {
+            setPendingSinglePurchase(true);
+            setShowSubscription(true);
+          } else {
+            setShowSubscription(true);
+          }
         }}
       />
 

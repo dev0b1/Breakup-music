@@ -6,6 +6,10 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { motion } from "framer-motion";
 import { FaSpinner } from "react-icons/fa";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
+import {
+  SINGLE_PRICE_ID,
+  PREMIUM_PRICE_ID,
+} from '@/lib/pricing';
 
 const tiers: { [key: string]: { priceId: string; name: string } } = {
   standard: {
@@ -25,6 +29,7 @@ export default function CheckoutContent() {
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const processCheckout = async () => {
@@ -35,6 +40,7 @@ export default function CheckoutContent() {
           router.push("/login");
           return;
         }
+        setUserEmail(user.email || null);
 
         // Get tier from query params
         const tier = searchParams.get("tier") || "premium";
@@ -63,41 +69,54 @@ export default function CheckoutContent() {
         let priceId: string;
         let successUrl: string;
 
+        const songId = searchParams.get('songId');
+
         if (type === "single") {
-          priceId = process.env.NEXT_PUBLIC_PADDLE_PRICE_SINGLE || "pri_single";
-          successUrl = `${window.location.origin}/success?type=single`;
+          priceId = SINGLE_PRICE_ID || process.env.NEXT_PUBLIC_PADDLE_PRICE_SINGLE || "pri_single";
+          successUrl = `${window.location.origin}/success?type=single${songId ? `&songId=${songId}` : ''}`;
         } else {
-          const tierConfig = tiers[tier];
-          if (!tierConfig) {
-            setError("Invalid tier selected");
-            setIsLoading(false);
-            return;
+          // support 'premium' and 'standard' tiers; prefer centralized PREMIUM_PRICE_ID for premium
+          if (tier === 'premium') {
+            priceId = PREMIUM_PRICE_ID || process.env.NEXT_PUBLIC_PADDLE_PRICE_PREMIUM || tiers['premium'].priceId;
+          } else {
+            const tierConfig = tiers[tier];
+            if (!tierConfig) {
+              setError("Invalid tier selected");
+              setIsLoading(false);
+              return;
+            }
+            priceId = tierConfig.priceId;
           }
-          priceId = tierConfig.priceId;
           successUrl = `${window.location.origin}/success?tier=${tier}`;
         }
 
-        // Validate price ID format
-        const isPaddleFormat = /^pri_[0-9a-zA-Z]{20,}$/.test(priceId);
-        if (!isPaddleFormat) {
+        // Validate price ID format (allow shorter sandbox ids but warn)
+        const isPaddleFormatStrict = /^pri_[0-9a-zA-Z]{20,}$/.test(priceId);
+        const isPaddleFormatLoose = /^pri_[0-9a-zA-Z]{5,}/.test(priceId);
+        if (!isPaddleFormatLoose) {
           setError("Payment system not configured. Please contact support.");
           setIsLoading(false);
           return;
         }
+        if (!isPaddleFormatStrict) {
+          console.warn('Paddle price id appears shorter than mainnet format; this may be a sandbox id and is allowed for dev.');
+        }
+
+        // Build checkout payload. If we have a songId and user, attach custom_data so
+        // webhook can unlock the specific song after transaction completion.
+        const checkoutPayload: any = {
+          items: [ { priceId: priceId, quantity: 1 } ],
+          settings: { successUrl: successUrl, theme: 'light' }
+        };
+
+        if (songId) {
+          checkoutPayload.customData = { songId, userId: user?.id || null };
+        } else if (user) {
+          checkoutPayload.customData = { userId: user.id };
+        }
 
         // Open Paddle checkout
-        (window as any).Paddle.Checkout.open({
-          items: [
-            {
-              priceId: priceId,
-              quantity: 1,
-            },
-          ],
-          settings: {
-            successUrl: successUrl,
-            theme: "light",
-          },
-        });
+        (window as any).Paddle.Checkout.open(checkoutPayload);
 
         setIsLoading(false);
       } catch (err) {
@@ -121,6 +140,11 @@ export default function CheckoutContent() {
         >
           <FaSpinner className="text-5xl text-exroast-gold animate-spin mx-auto" />
           <h2 className="text-3xl font-bold text-white">Opening checkout...</h2>
+          {userEmail ? (
+            <div className="text-sm text-gray-400">Signed in as {userEmail}</div>
+          ) : (
+            <div className="text-sm text-gray-400">Signing in...</div>
+          )}
           <p className="text-gray-400">Redirecting to Paddle</p>
         </motion.div>
       </div>
@@ -138,6 +162,11 @@ export default function CheckoutContent() {
         >
           <h2 className="text-3xl font-bold text-red-500">Checkout Error</h2>
           <p className="text-gray-300">{error}</p>
+          {userEmail ? (
+            <p className="text-sm text-gray-400">Signed in as {userEmail}</p>
+          ) : (
+            <p className="text-sm text-gray-400">Not signed in</p>
+          )}
           <button
             onClick={() => router.push("/pricing")}
             className="btn-primary w-full"
