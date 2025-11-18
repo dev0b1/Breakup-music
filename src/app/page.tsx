@@ -226,6 +226,91 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Daily Savage Quotes Section */}
+        <section className="section-container bg-gradient-to-b from-black via-exroast-pink/5 to-black">
+          <div className="text-center mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="space-y-4"
+            >
+              <h2 className="text-5xl md:text-6xl font-black text-gradient mb-4">
+                Daily Petty Power-Ups 🔥
+              </h2>
+              <p className="text-2xl text-white font-bold">
+                Stay savage with daily motivation + optional audio bangers
+              </p>
+            </motion.div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              whileHover={{ scale: 1.05, rotate: -1 }}
+              className="card border-2 border-exroast-gold"
+            >
+              <div className="text-6xl mb-4 emoji-enhanced">💬</div>
+              <h3 className="text-3xl font-black text-gradient mb-3">Daily Savage Quotes</h3>
+              <p className="text-lg text-white mb-4">
+                Wake up to brutal motivation every day
+              </p>
+              <div className="space-y-2 text-left">
+                <p className="text-white italic">"They didn't lose you. You upgraded."</p>
+                <p className="text-white italic">"Closure? That's what doors are for."</p>
+                <p className="text-white italic">"You're not heartbroken. You're free."</p>
+              </div>
+              <div className="mt-6 bg-exroast-gold/20 border-2 border-exroast-gold rounded-lg px-4 py-3">
+                <p className="text-white font-bold">✅ FREE - Unlimited text quotes</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              whileHover={{ scale: 1.05, rotate: 1 }}
+              className="card border-2 border-exroast-pink"
+            >
+              <div className="text-6xl mb-4 emoji-enhanced">🎵</div>
+              <h3 className="text-3xl font-black text-gradient mb-3">Audio Nudges</h3>
+              <p className="text-lg text-white mb-4">
+                15-20s personalized motivation with lo-fi trap beats
+              </p>
+              <div className="space-y-2 text-left">
+                <p className="text-white">🎤 Confident narrator voice</p>
+                <p className="text-white">🎧 Lo-fi trap/hype beat background</p>
+                <p className="text-white">💅 Tailored to YOUR breakup story</p>
+              </div>
+              <div className="mt-6 space-y-2">
+                <div className="bg-white/10 border border-white/20 rounded-lg px-4 py-2">
+                  <p className="text-white font-bold text-sm">FREE: 1 audio/week</p>
+                </div>
+                <div className="bg-exroast-pink/20 border-2 border-exroast-pink rounded-lg px-4 py-3">
+                  <p className="text-white font-bold">PRO ($12.99/mo): 20 credits/month</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <p className="text-xl text-white font-bold mb-6">
+              Opt in after your first roast or anytime on your account 👑
+            </p>
+          </motion.div>
+        </section>
+
         {/* Benefits Section */}
         <section className="section-container">
           <div className="text-center mb-16">
