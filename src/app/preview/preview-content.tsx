@@ -8,11 +8,13 @@ import { Footer } from "@/components/Footer";
 import { SubscriptionCTA } from "@/components/SubscriptionCTA";
 import { SubscriptionModal } from "@/components/SubscriptionModal";
 import { UpsellModal } from "@/components/UpsellModal";
+import { DailyQuoteOptInModal } from "@/components/DailyQuoteOptInModal";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { LoadingAnimation } from "@/components/LoadingAnimation";
 import { LyricsOverlay } from "@/components/LyricsOverlay";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { FaLock, FaDownload, FaPlay, FaPause } from "react-icons/fa";
+import { getDailySavageQuote } from "@/lib/suno-nudge";
 
 interface Song {
   id: string;
@@ -35,6 +37,7 @@ export default function PreviewContent() {
   const [showSubscription, setShowSubscription] = useState(false);
   const [showFirstTimeModal, setShowFirstTimeModal] = useState(false);
   const [showUpsellModal, setShowUpsellModal] = useState(false);
+  const [showDailyQuoteOptIn, setShowDailyQuoteOptIn] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -55,6 +58,15 @@ export default function PreviewContent() {
       
       if (data.success) {
         setSong(data.song);
+        
+        if (typeof window !== 'undefined') {
+          const hasSeenDailyQuoteOptIn = localStorage.getItem('hasSeenDailyQuoteOptIn');
+          if (!hasSeenDailyQuoteOptIn) {
+            setTimeout(() => {
+              setShowDailyQuoteOptIn(true);
+            }, 2000);
+          }
+        }
       } else {
         console.error("Failed to fetch song");
       }
@@ -62,6 +74,52 @@ export default function PreviewContent() {
       console.error("Error fetching song:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDailyQuoteOptIn = async (audioEnabled: boolean) => {
+    const userId = songId || 'anonymous';
+    const testQuote = getDailySavageQuote(1);
+    
+    console.log('Daily Quote Opt-In Flow:');
+    console.log('- User ID:', userId);
+    console.log('- Audio Enabled:', audioEnabled);
+    console.log('- Test Quote:', testQuote);
+    
+    if (audioEnabled) {
+      console.log('- Audio Nudge URL: [Will be generated via Suno AI on daily schedule]');
+      console.log('- Test Audio Generation: User would receive 15-20s motivational audio with lo-fi trap beats');
+    }
+
+    try {
+      const response = await fetch('/api/daily-quotes/opt-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, audioEnabled })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('✅ Opt-in successful!');
+        console.log('Test quote from API:', data.testQuote);
+        console.log('Today\'s savage quote:', testQuote);
+        
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('hasSeenDailyQuoteOptIn', 'true');
+          alert(`🔥 You're in! Daily savage quotes activated.\n\nToday's quote: ${testQuote}\n\n${audioEnabled ? 'Audio nudges enabled - you\'ll get personalized 15s motivation with beats!' : 'Text quotes only - upgrade to Pro for audio nudges!'}`);
+        }
+      } else {
+        console.error('Opt-in failed:', data.error);
+        if (typeof window !== 'undefined') {
+          alert('❌ Oops! Something went wrong. Please try again.');
+        }
+      }
+    } catch (error) {
+      console.error('Opt-in error:', error);
+      if (typeof window !== 'undefined') {
+        alert('❌ Network error. Please check your connection and try again.');
+      }
     }
   };
 
@@ -337,6 +395,18 @@ export default function PreviewContent() {
           setShowUpsellModal(false);
           setShowSubscription(true);
         }}
+      />
+
+      <DailyQuoteOptInModal
+        isOpen={showDailyQuoteOptIn}
+        onClose={() => {
+          setShowDailyQuoteOptIn(false);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('hasSeenDailyQuoteOptIn', 'true');
+          }
+        }}
+        onOptIn={handleDailyQuoteOptIn}
+        isPro={song?.isPurchased || false}
       />
     </main>
   );

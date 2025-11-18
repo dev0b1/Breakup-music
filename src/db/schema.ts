@@ -40,6 +40,7 @@ export const subscriptions = pgTable('subscriptions', {
   tier: text('tier').notNull(),
   status: text('status').default('active').notNull(),
   songsRemaining: integer('songs_remaining').default(0).notNull(),
+  creditsRemaining: integer('credits_remaining').default(0).notNull(),
   renewsAt: timestamp('renews_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull().$onUpdate(() => new Date()),
@@ -106,3 +107,54 @@ export type InsertRoast = typeof roasts.$inferInsert;
 
 export type Transaction = typeof transactions.$inferSelect;
 export type InsertTransaction = typeof transactions.$inferInsert;
+
+export const userPreferences = pgTable('user_preferences', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().unique(),
+  dailyQuotesEnabled: boolean('daily_quotes_enabled').default(false).notNull(),
+  audioNudgesEnabled: boolean('audio_nudges_enabled').default(false).notNull(),
+  lastQuoteSent: timestamp('last_quote_sent'),
+  quoteScheduleHour: integer('quote_schedule_hour').default(10).notNull(),
+  audioNudgesThisWeek: integer('audio_nudges_this_week').default(0).notNull(),
+  weekResetDate: timestamp('week_reset_date').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull().$onUpdate(() => new Date()),
+}, (table) => ({
+  userIdIdx: index('user_preferences_user_id_idx').on(table.userId),
+}));
+
+export const dailyQuotes = pgTable('daily_quotes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull(),
+  quoteText: text('quote_text').notNull(),
+  audioUrl: text('audio_url'),
+  sentAt: timestamp('sent_at').defaultNow().notNull(),
+  deliveryMethod: text('delivery_method').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index('daily_quotes_user_id_idx').on(table.userId),
+  sentAtIdx: index('daily_quotes_sent_at_idx').on(table.sentAt),
+}));
+
+export const audioNudges = pgTable('audio_nudges', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull(),
+  userStory: text('user_story').notNull(),
+  dayNumber: integer('day_number').notNull(),
+  audioUrl: text('audio_url').notNull(),
+  motivationText: text('motivation_text').notNull(),
+  creditsUsed: integer('credits_used').default(1).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index('audio_nudges_user_id_idx').on(table.userId),
+  createdAtIdx: index('audio_nudges_created_at_idx').on(table.createdAt),
+}));
+
+export type UserPreference = typeof userPreferences.$inferSelect;
+export type InsertUserPreference = typeof userPreferences.$inferInsert;
+
+export type DailyQuote = typeof dailyQuotes.$inferSelect;
+export type InsertDailyQuote = typeof dailyQuotes.$inferInsert;
+
+export type AudioNudge = typeof audioNudges.$inferSelect;
+export type InsertAudioNudge = typeof audioNudges.$inferInsert;

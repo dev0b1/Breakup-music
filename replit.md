@@ -3,6 +3,25 @@
 ## Overview
 ExRoast.fm is a Next.js web application that turns breakup stories into savage, TikTok-viral AI roast songs. 100% petty, zero sadness. Built with Next.js 16, Tailwind CSS, Framer Motion, Suno AI, and OpenRouter.
 
+## Recent Changes (November 18, 2025)
+
+### Retention Features: Daily Savage Quotes + Audio Nudges (November 18, 2025)
+- ✅ **Daily Quote Opt-In Modal** - Post-generation modal with "Get daily petty power-ups? 🔥" appears 2 seconds after roast generation
+- ✅ **Credit System Implementation** - Free: unlimited text quotes + 1 audio nudge/week, Pro: 20 credits at $12.99/mo with rollover on renewal
+- ✅ **Suno AI Audio Nudges** - 15-20s motivational audio with confident narrator + lo-fi trap/hype beats, personalized to user's breakup story
+- ✅ **Database Schema Updates**:
+  - Added `user_preferences` table (daily_quotes_enabled, audio_nudges_enabled, quote_schedule)
+  - Added `creditsRemaining` field to subscriptions table
+  - Added `daily_quotes` and `audio_nudges` tracking tables
+- ✅ **API Endpoints Created**:
+  - `/api/daily-quotes/opt-in` (POST) - Opt into daily savage quotes
+  - `/api/daily-quotes/preferences` (GET/PUT) - Manage quote preferences
+  - `/api/audio-nudge/generate` (POST) - Generate audio nudge with credit deduction
+  - `/api/credits/check` (GET) - Check remaining credits and tier status
+- ✅ **Webhook Updates** - Paddle webhook now refills 20 credits on subscription renewal with rollover
+- ✅ **Footer Tease** - Added "Daily savage quotes + mood bangers waiting 🔥" to landing page footer
+- ✅ **Test Flow** - Console logs for testing: opt-in → quote simulation → audio nudge URL display
+
 ## Recent Changes (November 16, 2025)
 
 ### Complete Prisma Removal & Pricing Polish (November 16, 2025)
@@ -121,21 +140,26 @@ ExRoast.fm is a Next.js web application that turns breakup stories into savage, 
 - `/api/generate-song` - POST endpoint for savage roast generation (OpenRouter + Suno AI)
 - `/api/song/[id]` - GET endpoint for song retrieval
 - `/api/ocr` - POST endpoint for chat screenshot text extraction
-- `/api/webhook` - Paddle webhook handler
+- `/api/webhook` - Paddle webhook handler (includes credit refill logic)
+- `/api/daily-quotes/opt-in` - POST endpoint for daily quote opt-in
+- `/api/daily-quotes/preferences` - GET/PUT endpoints for managing quote preferences
+- `/api/audio-nudge/generate` - POST endpoint for generating audio nudges with Suno AI
+- `/api/credits/check` - GET endpoint for checking user credits and tier status
 
 ### Libraries
 - `lib/suno.ts` - Suno AI client for music generation
+- `lib/suno-nudge.ts` - Suno AI client for 15-20s audio nudges with lo-fi trap beats
 - `lib/openrouter.ts` - OpenRouter client with savage roast prompts
 - `lib/ocr.ts` - Tesseract.js OCR functionality
 - `lib/lyrics.ts` - Lyrics generation utilities
-- `lib/prisma.ts` - Prisma database client
+- `lib/db-service.ts` - Database service functions (includes credit management, user preferences, daily quotes tracking)
 
 ## Paddle Billing Integration
 
 ### Subscription Tiers
-- **Free**: $0 - 15-second watermarked previews ("Full roast at ExRoast.fm")
+- **Free**: $0 - 15-second watermarked previews ("Full roast at ExRoast.fm"), unlimited text quotes, 1 audio nudge/week
 - **One-Time**: $4.99 - Full 30-second roast song
-- **Unlimited**: $12.99/month - Unlimited roasts, no watermark, priority generation
+- **Unlimited**: $12.99/month - Unlimited roasts, 20 audio nudge credits (refills monthly with rollover), no watermark, priority generation
 
 ### Setup Instructions
 
@@ -247,12 +271,34 @@ OPENROUTER_API_KEY=your_api_key_here
 - **TikTok-viral positioning** - Pre-filled captions, share images
 - **Savage AI prompts** - 100% petty, zero healing vibes
 
+## Retention Features
+
+### Daily Savage Quotes
+- **Text Quotes**: 1x/day motivational savage quote (e.g., "They didn't lose you. You upgraded.")
+- **Audio Nudges**: 15-20s spoken motivational audio with confident narrator + lo-fi trap/hype beats
+- **Personalization**: Audio nudges personalized to user's breakup story
+- **Delivery**: Push notifications/email (Firebase integration pending)
+- **Opt-In Flow**: Modal appears after roast generation → User opts in → Preferences saved to database
+
+### Credit System
+- **Free Users**: Unlimited text quotes, 1 audio nudge per week (resets weekly)
+- **Pro Users ($12.99/mo)**: 20 audio nudge credits, refills monthly with rollover
+- **Credit Tracking**: Database tracks credits_remaining, deducts 1 per audio generation
+- **Webhook Integration**: Paddle webhook refills credits on subscription renewal
+
+### Database Schema
+- `user_preferences` - Stores opt-in status, schedule preferences, weekly audio nudge count
+- `daily_quotes` - Tracks sent quotes with delivery method and audio URL
+- `audio_nudges` - Tracks generated audio nudges with story, motivation text, credits used
+- `subscriptions.creditsRemaining` - Tracks remaining audio nudge credits for Pro users
+
 ## Next Steps
 1. ✅ Complete ExRoast.fm transformation
-2. Test Suno AI integration with new roast prompts
-3. Set up Paddle products ($4.99 one-time, $12.99/mo)
-4. Configure webhook endpoint
-5. Test watermark on free previews
-6. Implement TikTok share image generation
-7. Add authentication with Drizzle ORM (currently commented out)
-8. Deploy and test complete roast workflow
+2. ✅ Implement retention features (daily quotes + audio nudges)
+3. Test complete retention flow (opt-in → daily quotes → audio nudge generation)
+4. Set up Firebase push notifications for daily quote delivery
+5. Configure daily quote cron job/scheduler
+6. Test Paddle webhook credit refill on subscription renewal
+7. Implement TikTok share image generation
+8. Add authentication with Drizzle ORM (currently commented out)
+9. Deploy and test complete roast + retention workflow

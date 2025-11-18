@@ -88,8 +88,13 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-exroast-pink/20 text-center">
-          <p className="text-gray-500 text-sm font-bold">
+        <div className="pt-8 border-t border-exroast-pink/20">
+          <div className="text-center mb-4">
+            <p className="text-gray-400 text-sm font-bold">
+              <span className="text-exroast-pink">Daily savage quotes + mood bangers waiting 🔥</span>
+            </p>
+          </div>
+          <p className="text-gray-500 text-sm font-bold text-center">
             © {new Date().getFullYear()} ExRoast.fm. All rights reserved. Your ex? Not so much. 😈
           </p>
         </div>

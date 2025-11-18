@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
-import { transactions, songs } from "@/src/db/schema";
+import { transactions, songs, subscriptions } from "@/src/db/schema";
 import { eq } from "drizzle-orm";
+import { refillCredits } from "@/lib/db-service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -124,12 +125,85 @@ async function handleTransactionCompleted(transaction: any) {
 
 async function handleSubscriptionCreated(subscription: any) {
   console.log("Subscription created:", subscription.id);
+  
+  const userId = subscription.custom_data?.userId;
+  
+  if (!userId) {
+    console.warn("No userId in subscription custom_data");
+    return;
+  }
+
+  const tier = subscription.custom_data?.tier || 'unlimited';
+  
+  await db
+    .insert(subscriptions)
+    .values({
+      userId,
+      paddleSubscriptionId: subscription.id,
+      tier,
+      status: 'active',
+      creditsRemaining: tier === 'unlimited' ? 20 : 0,
+      renewsAt: subscription.next_billed_at ? new Date(subscription.next_billed_at) : null,
+    })
+    .onConflictDoUpdate({
+      target: subscriptions.userId,
+      set: {
+        paddleSubscriptionId: subscription.id,
+        tier,
+        status: 'active',
+        creditsRemaining: tier === 'unlimited' ? 20 : 0,
+        renewsAt: subscription.next_billed_at ? new Date(subscription.next_billed_at) : null,
+        updatedAt: new Date(),
+      }
+    });
+  
+  console.log(`Subscription created for user ${userId} with ${tier === 'unlimited' ? '20 credits' : '0 credits'}`);
 }
 
 async function handleSubscriptionUpdated(subscription: any) {
   console.log("Subscription updated:", subscription.id);
+  
+  const userId = subscription.custom_data?.userId;
+  
+  if (!userId) {
+    console.warn("No userId in subscription custom_data");
+    return;
+  }
+
+  const tier = subscription.custom_data?.tier || 'unlimited';
+  const status = subscription.status;
+
+  if (status === 'active' && subscription.billing_cycle) {
+    const isRenewal = subscription.event_type === 'subscription.renewed' || 
+                      (subscription.billing_cycle?.count && subscription.billing_cycle.count > 1);
+    
+    if (isRenewal && tier === 'unlimited') {
+      await refillCredits(userId, 20);
+      console.log(`Refilled 20 credits for user ${userId} on subscription renewal (rollover enabled)`);
+    }
+  }
+
+  await db
+    .update(subscriptions)
+    .set({
+      tier,
+      status,
+      renewsAt: subscription.next_billed_at ? new Date(subscription.next_billed_at) : null,
+      updatedAt: new Date(),
+    })
+    .where(eq(subscriptions.paddleSubscriptionId, subscription.id));
 }
 
 async function handleSubscriptionCanceled(subscription: any) {
   console.log("Subscription canceled:", subscription.id);
+  
+  await db
+    .update(subscriptions)
+    .set({
+      status: 'canceled',
+      updatedAt: new Date(),
+    })
+    .where(eq(subscriptions.paddleSubscriptionId, subscription.id));
+  
+  console.log(`Subscription ${subscription.id} marked as canceled`);
 }
