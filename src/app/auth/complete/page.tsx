@@ -44,6 +44,12 @@ export default function AuthComplete() {
           return;
         }
 
+        // mark just signed in so header can show a confirmation toast
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('justSignedIn', 'true');
+          } catch (e) {}
+        }
         router.push(decoded);
       } catch (err) {
         console.error('Auth finalize error', err);

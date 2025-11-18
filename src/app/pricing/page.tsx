@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { SINGLE_LABEL, SINGLE_AMOUNT, PREMIUM_LABEL, PREMIUM_AMOUNT } from '@/lib/pricing';
+import { openSingleCheckout, openTierCheckout } from '@/lib/checkout';
 
 export default function PricingPage() {
   return (
@@ -125,11 +126,17 @@ export default function PricingPage() {
                   <span className="text-gray-600 line-through">Screenshot upload</span>
                 </li>
               </ul>
-              <Link href="/story">
-                <button className="btn-primary w-full">
-                  Get One Song
-                </button>
-              </Link>
+              <button
+                className="btn-primary w-full"
+                onClick={() => {
+                  // Reuse the same checkout flow as the preview page (no songId for general one-time)
+                  if (typeof window !== 'undefined') {
+                    openSingleCheckout();
+                  }
+                }}
+              >
+                Get One Song
+              </button>
             </motion.div>
 
             <motion.div
@@ -180,11 +187,17 @@ export default function PricingPage() {
                   <span>Clean MP3 downloads (no watermark)</span>
                 </li>
               </ul>
-              <Link href="/story">
-                <button className="btn-primary w-full">
-                  Go Unlimited
-                </button>
-              </Link>
+              <button
+                className="btn-primary w-full"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    // premium tier id 'unlimited' and premium price id will be used by helper
+                    openTierCheckout('unlimited');
+                  }
+                }}
+              >
+                Go Unlimited
+              </button>
             </motion.div>
           </div>
 

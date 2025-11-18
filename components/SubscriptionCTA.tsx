@@ -5,6 +5,7 @@ import { FaCheck, FaStar, FaCrown } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { openSingleCheckout, openTierCheckout } from "@/lib/checkout";
 import {
   SINGLE_PRICE_ID,
   SINGLE_AMOUNT,
@@ -84,65 +85,11 @@ export function SubscriptionCTA({ songId, autoOpenSingle }: SubscriptionCTAProps
 
   const handleSubscribe = async (tier: SubscriptionTier) => {
     setIsLoading(tier.id);
-    
     try {
-      // Check if user is logged in
-      if (!user) {
-        // Trigger OAuth sign-in with Google and redirect to checkout after auth
-        if (typeof window !== 'undefined') {
-          const dest = `/checkout?tier=${tier.id}`;
-          const redirectTo = `${window.location.origin}/auth/complete?returnTo=${encodeURIComponent(dest)}`;
-          await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
-        } else {
-          router.push(`/login?redirectTo=/checkout&tier=${tier.id}`);
-        }
-        return;
-      }
-
-      if (typeof window === "undefined") {
-        throw new Error("Window is not defined");
-      }
-
-      if (!(window as any).Paddle) {
-        alert("Payment system is still loading. Please wait a moment and try again.");
-        setIsLoading(null);
-        return;
-      }
-
-      if (!tier.priceId) {
-        console.error("Paddle price ID not configured. Please set up your Paddle products and environment variables.");
-        alert("Payment system not configured. Please contact support.");
-        setIsLoading(null);
-        return;
-      }
-
-      const isPaddleFormatStrict = /^pri_[0-9a-zA-Z]{20,}$/.test(tier.priceId);
-      const isPaddleFormatLoose = /^pri_[0-9a-zA-Z]{5,}/.test(tier.priceId);
-      if (!isPaddleFormatLoose) {
-        console.warn(`Price ID "${tier.priceId}" doesn't look like a Paddle price ID. Configure real Paddle price IDs in environment variables.`);
-        alert("Payment system not fully configured. Please set up real Paddle price IDs.");
-        setIsLoading(null);
-        return;
-      }
-      if (!isPaddleFormatStrict) {
-        console.warn(`Price ID "${tier.priceId}" appears shorter than mainnet format; this may be a sandbox id and is allowed for dev.`);
-      }
-
-      (window as any).Paddle.Checkout.open({
-        items: [
-          {
-            priceId: tier.priceId,
-            quantity: 1,
-          },
-        ],
-        settings: {
-          successUrl: `${window.location.origin}/success?tier=${tier.id}`,
-          theme: "light",
-        },
-      });
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Unable to open checkout. Please try again or contact support.");
+      await openTierCheckout(tier.id, tier.priceId);
+    } catch (err) {
+      console.error('handleSubscribe error', err);
+      alert('Unable to open checkout. Please try again or contact support.');
     } finally {
       setIsLoading(null);
     }
@@ -223,10 +170,10 @@ export function SubscriptionCTA({ songId, autoOpenSingle }: SubscriptionCTAProps
 
   // If the component was mounted with autoOpenSingle and a songId, open checkout once
   useEffect(() => {
-    if (autoOpenSingle && songId) {
+      if (autoOpenSingle && songId) {
       // small next tick to allow Paddle to load
       setTimeout(() => {
-        handleSingleSongPurchase({ songId });
+        openSingleCheckout({ songId });
       }, 200);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

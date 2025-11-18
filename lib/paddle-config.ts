@@ -20,19 +20,19 @@ type PriceMapping = {
 };
 
 export function getPaddlePriceMapping(): PriceMapping {
-  const p1 = process.env.NEXT_PADDLE_PRICE_ID_1 || process.env.PADDLE_PRICE_ID_1 || '';
-  const p2 = process.env.NEXT_PADDLE_PRICE_ID_2 || process.env.PADDLE_PRICE_ID_2 || '';
+  // Prefer explicit names that use SINGLE / PREMIUM for clarity.
+  const p1 = process.env.NEXT_PADDLE_PRICE_ID_SINGLE || process.env.NEXT_PADDLE_PRICE_ID_1 || process.env.PADDLE_PRICE_ID_1 || '';
+  const p2 = process.env.NEXT_PADDLE_PRICE_ID_PREMIUM || process.env.NEXT_PADDLE_PRICE_ID_2 || process.env.PADDLE_PRICE_ID_2 || '';
 
   const mapping: PriceMapping = {};
 
   if (p1) {
-    // NOTE: per product owner: the FIRST price ID is a one-time single-song purchase ($4.99)
-    // Map price 1 -> one-time purchase (used to unlock a single song)
+    // Map SINGLE -> one-time single-song purchase
     mapping[p1] = { kind: 'purchase', tier: 'one-time', creditsAmount: 0 };
   }
 
   if (p2) {
-    // Default: price 2 -> one-time credits pack (grant 20 credits)
+    // Map PREMIUM -> subscription/credits pack (default: grant 20 credits for example)
     mapping[p2] = { kind: 'credits', tier: 'one-time', creditsAmount: 20 };
   }
 

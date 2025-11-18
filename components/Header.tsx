@@ -1,12 +1,38 @@
 "use client";
+import { useState, useEffect } from "react";
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { FaUserCircle } from 'react-icons/fa';
+import { usePathname, useRouter } from 'next/navigation';
 
-import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaBars, FaTimes } from "react-icons/fa";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<any | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const supabase = createClientComponentClient();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+    };
+    checkUser();
+
+    // show one-time toast after sign in
+    try {
+      if (typeof window !== 'undefined' && localStorage.getItem('justSignedIn') === 'true') {
+        setShowToast(true);
+        localStorage.removeItem('justSignedIn');
+        setTimeout(() => setShowToast(false), 4000);
+      }
+    } catch (e) {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   return (
     <motion.header
@@ -49,6 +75,23 @@ export function Header() {
                 <span style={{ filter: 'brightness(1.1) contrast(1.2)' }}>Roast My Ex 🔥</span>
               </button>
             </Link>
+
+            {/* Auth area */}
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => router.push('/account')}
+                  className="flex items-center gap-3 bg-white/5 px-3 py-2 rounded-full"
+                >
+                  <FaUserCircle className="text-xl text-white" />
+                  <span className="text-sm text-white/90 truncate max-w-[120px]">{user.email}</span>
+                </button>
+              </div>
+            ) : (
+              <Link href="/login">
+                <button className="bg-white text-black px-4 py-2 rounded-full font-bold">Sign in</button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -90,10 +133,32 @@ export function Header() {
                   <span style={{ filter: 'brightness(1.1) contrast(1.2)' }}>Roast My Ex 🔥</span>
                 </button>
               </Link>
+
+              {/* Mobile auth area */}
+              <div className="pt-4">
+                {user ? (
+                  <div className="space-y-2">
+                    <div className="text-white">Signed in as</div>
+                    <div className="text-gray-300 font-bold">{user.email}</div>
+                    <Link href="/account" onClick={() => setMobileMenuOpen(false)}>
+                      <button className="w-full btn-primary">My Roasts</button>
+                    </Link>
+                  </div>
+                ) : (
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <button className="w-full bg-white text-black py-3 rounded-full font-bold">Sign in</button>
+                  </Link>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </nav>
+      {showToast && (
+        <div className="fixed top-20 right-6 bg-exroast-gold text-black px-4 py-2 rounded-lg shadow-lg z-50">
+          Signed in successfully
+        </div>
+      )}
     </motion.header>
   );
 }

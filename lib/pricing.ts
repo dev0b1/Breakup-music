@@ -12,9 +12,14 @@ export const PREMIUM_LABEL = process.env.NEXT_PUBLIC_PADDLE_PRICE_PREMIUM_LABEL 
 export const PREMIUM_BUTTON_TEXT = process.env.NEXT_PUBLIC_PADDLE_PRICE_PREMIUM_BUTTON_TEXT || `Unlimited Roasts + History`;
 
 // Server-side Paddle price ids (no NEXT_PUBLIC_) — exported here for convenience if server imports this file.
-// Note: server code should prefer process.env.NEXT_PADDLE_PRICE_ID_1/_2 directly or use lib/paddle-config.ts
-export const SERVER_PRICE_ID_1 = process.env.NEXT_PADDLE_PRICE_ID_1 || "";
-export const SERVER_PRICE_ID_2 = process.env.NEXT_PADDLE_PRICE_ID_2 || "";
+// Prefer explicit names using SINGLE / PREMIUM so envs are readable.
+// Fall back to legacy NEXT_PADDLE_PRICE_ID_1/_2 if present.
+export const SERVER_PRICE_ID_SINGLE = process.env.NEXT_PADDLE_PRICE_ID_SINGLE || process.env.NEXT_PADDLE_PRICE_ID_1 || "";
+export const SERVER_PRICE_ID_PREMIUM = process.env.NEXT_PADDLE_PRICE_ID_PREMIUM || process.env.NEXT_PADDLE_PRICE_ID_2 || "";
+
+// Backwards-compatible aliases (some places previously referenced SERVER_PRICE_ID_1/2)
+export const SERVER_PRICE_ID_1 = SERVER_PRICE_ID_SINGLE;
+export const SERVER_PRICE_ID_2 = SERVER_PRICE_ID_PREMIUM;
 
 export default {
   SINGLE_PRICE_ID,
