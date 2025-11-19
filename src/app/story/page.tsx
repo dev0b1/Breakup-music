@@ -5,7 +5,6 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { StyleSelector, SongStyle } from "@/components/StyleSelector";
 import LoadingProgress, { LoadingStep } from "@/components/LoadingProgress";
 import { FiEdit } from "react-icons/fi";
@@ -338,9 +337,7 @@ export default function StoryPage() {
             </div>
           </motion.div>
         </div>
-      </main>
-      
-      {!currentUser && <Footer />}
+  </main>
     </div>
   );
 }

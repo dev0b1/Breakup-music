@@ -197,15 +197,25 @@ export function Header({ userProp }: { userProp?: any }) {
               </>
             )}
 
-            <Link href={user ? "/story" : "/template"}>
-              <button className="bg-[#ff4500] hover:bg-[#ff4500]/90 text-white px-8 py-3 rounded-full font-black text-lg transition-all duration-200 border-2 border-[#ffd23f] shadow-lg hover:shadow-[#ff006e]/70 hover:shadow-2xl">
-                <span style={{ filter: 'brightness(1.1) contrast(1.2)' }}>Roast My Ex 🔥</span>
-              </button>
-            </Link>
+            {!user && pathname !== '/story' && (
+              <Link href={"/template"}>
+                <button className="bg-[#ff4500] hover:bg-[#ff4500]/90 text-white px-8 py-3 rounded-full font-black text-lg transition-all duration-200 border-2 border-[#ffd23f] shadow-lg hover:shadow-[#ff006e]/70 hover:shadow-2xl">
+                  <span style={{ filter: 'brightness(1.1) contrast(1.2)' }}>Roast My Ex 🔥</span>
+                </button>
+              </Link>
+            )}
 
             {/* Auth area */}
             {user ? (
               <div className="relative flex items-center gap-3">
+                {/* Desktop 'My Roasts' quick access (matches mobile) */}
+                <button
+                  onClick={() => setShowSettingsMenu(true)}
+                  className="hidden md:inline-flex items-center bg-white/5 px-3 py-2 rounded-full font-bold text-sm"
+                >
+                  My Roasts
+                </button>
+
                 <button
                   onClick={() => setShowSettingsMenu(true)}
                   onMouseDown={(e) => e.preventDefault()}
@@ -232,7 +242,7 @@ export function Header({ userProp }: { userProp?: any }) {
                 <div className="relative">
                   {showSettingsMenu && (
                     <div className="absolute right-0 mt-12" id="settings-menu">
-                      <SettingsMenu onClose={() => setShowSettingsMenu(false)} />
+                      <SettingsMenu user={user} onClose={() => setShowSettingsMenu(false)} />
                     </div>
                   )}
                 </div>
@@ -278,11 +288,13 @@ export function Header({ userProp }: { userProp?: any }) {
               >
                 FAQ
               </Link>
-              <Link href={user ? "/story" : "/template"} onClick={() => setMobileMenuOpen(false)}>
-                <button className="w-full bg-[#ff4500] hover:bg-[#ff4500]/90 text-white px-8 py-3 rounded-full font-black text-lg transition-all duration-200 border-2 border-[#ffd23f] shadow-lg hover:shadow-[#ff006e]/70 hover:shadow-2xl">
-                  <span style={{ filter: 'brightness(1.1) contrast(1.2)' }}>Roast My Ex 🔥</span>
-                </button>
-              </Link>
+              {!user && pathname !== '/story' && (
+                <Link href="/template" onClick={() => setMobileMenuOpen(false)}>
+                  <button className="w-full bg-[#ff4500] hover:bg-[#ff4500]/90 text-white px-8 py-3 rounded-full font-black text-lg transition-all duration-200 border-2 border-[#ffd23f] shadow-lg hover:shadow-[#ff006e]/70 hover:shadow-2xl">
+                    <span style={{ filter: 'brightness(1.1) contrast(1.2)' }}>Roast My Ex 🔥</span>
+                  </button>
+                </Link>
+              )}
 
               {/* Mobile auth area */}
               <div className="pt-4">
