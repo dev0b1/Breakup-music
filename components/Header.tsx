@@ -153,7 +153,7 @@ export function Header() {
             >
               FAQ
             </Link>
-            <Link href="/story">
+            <Link href={user ? "/story" : "/template"}>
               <button className="bg-[#ff4500] hover:bg-[#ff4500]/90 text-white px-8 py-3 rounded-full font-black text-lg transition-all duration-200 border-2 border-[#ffd23f] shadow-lg hover:shadow-[#ff006e]/70 hover:shadow-2xl">
                 <span style={{ filter: 'brightness(1.1) contrast(1.2)' }}>Roast My Ex 🔥</span>
               </button>
@@ -218,7 +218,7 @@ export function Header() {
               >
                 FAQ
               </Link>
-              <Link href="/story" onClick={() => setMobileMenuOpen(false)}>
+              <Link href={user ? "/story" : "/template"} onClick={() => setMobileMenuOpen(false)}>
                 <button className="w-full bg-[#ff4500] hover:bg-[#ff4500]/90 text-white px-8 py-3 rounded-full font-black text-lg transition-all duration-200 border-2 border-[#ffd23f] shadow-lg hover:shadow-[#ff006e]/70 hover:shadow-2xl">
                   <span style={{ filter: 'brightness(1.1) contrast(1.2)' }}>Roast My Ex 🔥</span>
                 </button>
