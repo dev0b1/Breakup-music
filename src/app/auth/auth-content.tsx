@@ -36,7 +36,8 @@ export default function AuthContent() {
   // Start the normal OAuth flow. Any intended purchase is stored in
   // localStorage by the checkout helper and will be resumed after sign-in.
   setDebugInfo({ step: 'starting' });
-      const res = await supabase.auth.signInWithOAuth({ provider: 'google' });
+  const redirectToFull = `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback?redirectTo=${encodeURIComponent(dest)}`;
+  const res = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: redirectToFull } });
 
       // Newer Supabase clients may return { data: { url } } to perform a redirect.
       // Older clients return { error } and perform a native redirect. Handle both.

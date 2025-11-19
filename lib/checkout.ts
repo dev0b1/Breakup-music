@@ -16,9 +16,17 @@ export async function openSingleCheckout(opts?: { songId?: string | null }) {
       } catch (e) {
         // ignore localStorage errors
       }
-      // Start the normal OAuth flow. After login the header will detect the
-      // session and auto-open the intended purchase.
-      await supabase.auth.signInWithOAuth({ provider: 'google' });
+      // Start OAuth and redirect to our server callback so it can exchange
+      // the code for a session cookie. After exchange the callback will
+      // redirect back to the desired checkout path.
+      try {
+        const dest = opts?.songId ? `/checkout?songId=${opts.songId}` : `/checkout?type=single`;
+        const redirectToFull = `${window.location.origin}/auth/callback?redirectTo=${encodeURIComponent(dest)}`;
+        await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: redirectToFull } });
+      } catch (e) {
+        // fallback to simple flow if options unsupported
+        await supabase.auth.signInWithOAuth({ provider: 'google' });
+      }
       return;
     }
     return;
@@ -67,7 +75,13 @@ export async function openTierCheckout(tierId: string, priceId?: string) {
       } catch (e) {
         // ignore localStorage errors
       }
-      await supabase.auth.signInWithOAuth({ provider: 'google' });
+      try {
+        const dest = `/checkout?tier=${tierId}`;
+        const redirectToFull = `${window.location.origin}/auth/callback?redirectTo=${encodeURIComponent(dest)}`;
+        await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: redirectToFull } });
+      } catch (e) {
+        await supabase.auth.signInWithOAuth({ provider: 'google' });
+      }
       return;
     }
     return;

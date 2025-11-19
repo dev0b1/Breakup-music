@@ -109,6 +109,14 @@ export function Header() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, supabase]);
 
+  // If the user becomes authenticated on the client and is on the public
+  // landing page (`/`), send them to the main logged-in page (`/story`).
+  useEffect(() => {
+    if (user && pathname === '/') {
+      router.push('/story');
+    }
+  }, [user, pathname, router]);
+
   return (
     <motion.header
       initial={{ y: -100, opacity: 0 }}
