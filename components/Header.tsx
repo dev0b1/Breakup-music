@@ -274,13 +274,12 @@ export function Header({ userProp }: { userProp?: any }) {
               transition={{ duration: 0.2 }}
               className="md:hidden mt-4 pb-4 space-y-4"
             >
-              <Link
-                href="/pricing"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-exroast-gold hover:text-white transition-colors duration-200 font-bold py-2"
+              <button
+                onClick={() => { setMobileMenuOpen(false); router.push('/checkout'); }}
+                className="w-full bg-gradient-to-r from-[#ff006e] to-[#ffd23f] text-black px-4 py-3 rounded-full font-bold"
               >
-                Pricing
-              </Link>
+                Upgrade
+              </button>
               <Link
                 href="/#faq"
                 onClick={() => setMobileMenuOpen(false)}

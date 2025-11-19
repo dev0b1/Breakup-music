@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from "next/navigation";
-import { openSingleCheckout, openTierCheckout } from '@/lib/checkout';
 
 export default function SettingsMenu({ user, onClose }: { user?: any; onClose?: () => void }) {
   const supabase = createClientComponentClient();
@@ -118,7 +117,7 @@ export default function SettingsMenu({ user, onClose }: { user?: any; onClose?: 
   // Render modal overlay (full-screen on mobile, centered modal on desktop)
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/60 flex items-start md:items-center justify-center p-6"
+      className="fixed inset-0 z-60 bg-black/40 flex items-start md:items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       onClick={handleOverlayClick}
@@ -126,7 +125,7 @@ export default function SettingsMenu({ user, onClose }: { user?: any; onClose?: 
       <div
         id="settings-menu"
         ref={containerRef}
-        className="w-full max-w-5xl bg-gray-900 border border-exroast-pink/30 rounded-xl shadow-2xl overflow-hidden"
+        className="w-full max-w-md md:max-w-3xl bg-exroast-black/95 border border-exroast-pink/30 rounded-xl shadow-2xl overflow-hidden"
       >
         {/* Header - spans both columns */}
         <div className="flex items-center justify-between p-4 border-b border-white/6">
@@ -144,7 +143,7 @@ export default function SettingsMenu({ user, onClose }: { user?: any; onClose?: 
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => { openSingleCheckout(); onClose?.(); }}
+              onClick={() => { router.push('/checkout'); onClose?.(); }}
               className="hidden sm:inline-flex items-center bg-gradient-to-r from-[#ff006e] to-[#ffd23f] text-black font-bold px-4 py-2 rounded-full shadow-md hover:scale-105 transition-transform"
             >
               Upgrade 🔥
@@ -179,7 +178,7 @@ export default function SettingsMenu({ user, onClose }: { user?: any; onClose?: 
                 </div>
                 <div>
                   <button
-                    onClick={() => { openTierCheckout('unlimited'); onClose?.(); }}
+                    onClick={() => { router.push('/checkout?tier=unlimited'); onClose?.(); }}
                     className="bg-exroast-pink px-4 py-2 rounded-full font-bold"
                   >
                     Go Unlimited
@@ -193,7 +192,7 @@ export default function SettingsMenu({ user, onClose }: { user?: any; onClose?: 
               <div className="text-sm text-white/70 mb-2">Quick actions</div>
               <div className="space-y-2">
                 <button
-                  onClick={() => { openSingleCheckout(); onClose?.(); }}
+                  onClick={() => { router.push('/checkout'); onClose?.(); }}
                   className="w-full text-left px-4 py-3 rounded-lg bg-white/5 hover:bg-white/6"
                 >
                   Upgrade - Buy full roast
