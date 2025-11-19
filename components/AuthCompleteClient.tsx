@@ -14,6 +14,18 @@ export default function AuthCompleteClient() {
   useEffect(() => {
     (async () => {
       try {
+        // If the provider sent an auth code to this URL (e.g. ?code=...), forward
+        // the full query string to the canonical server callback so the server can
+        // exchange the code for a session and set cookies. This avoids a race where
+        // the client waits for a session that was never established on this URL.
+        const code = search.get('code');
+        if (code && typeof window !== 'undefined') {
+          // Preserve the entire query string when forwarding.
+          const qs = window.location.search || '';
+          window.location.replace(`${window.location.origin}/auth/callback${qs}`);
+          return;
+        }
+
         const start = Date.now();
         let user = null;
         while (Date.now() - start < 3000) {

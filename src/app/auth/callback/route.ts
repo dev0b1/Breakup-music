@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   const redirectTo = searchParams.get('redirectTo') || '/story';
 
   if (code) {
+    console.log('[auth/callback] received code, redirectTo=', redirectTo);
     const cookieStore = await cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,6 +28,11 @@ export async function GET(request: NextRequest) {
     );
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      console.error('[auth/callback] exchangeCodeForSession error:', error.message || error);
+    } else {
+      console.log('[auth/callback] exchangeCodeForSession succeeded');
+    }
 
     if (!error) {
       // Redirect to checkout if user came from subscribe button
