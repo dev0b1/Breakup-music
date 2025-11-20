@@ -49,9 +49,9 @@ export function RoastModeTab({ userId }: RoastModeTabProps) {
           </p>
         </div>
 
-        <div className="bg-black/40 backdrop-blur-sm border border-red-900/30 rounded-lg p-6 md:p-8 shadow-xl">
+        <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-lg p-6 md:p-8 shadow-xl">
           <div className="space-y-6">
-            <div className="bg-red-950/30 border border-red-900/40 rounded-lg p-5 md:p-6">
+            <div className="bg-white/5 border border-white/10 rounded-lg p-5 md:p-6">
               <div className="flex items-start gap-4">
                 <div className="text-3xl md:text-4xl">🗡️</div>
                 <div className="flex-1">
@@ -67,7 +67,7 @@ export function RoastModeTab({ userId }: RoastModeTabProps) {
 
             <button
               onClick={() => router.push("/app")}
-              className="w-full text-lg md:text-xl font-black py-5 md:py-6 rounded-lg flex items-center justify-center gap-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg shadow-red-900/50 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full text-lg md:text-xl font-black py-5 md:py-6 rounded-lg flex items-center justify-center gap-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             >
               <span>Spill the Tea & Create Roast</span>
               <FaFire className="text-2xl" />
@@ -128,7 +128,7 @@ export function RoastModeTab({ userId }: RoastModeTabProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ scale: 1.03, y: -5 }}
-                className="bg-black/50 backdrop-blur-sm border border-red-900/40 hover:border-red-700/60 cursor-pointer transition-all duration-300 rounded-lg p-4 md:p-5 shadow-lg"
+                className="bg-black/60 backdrop-blur-xl border border-white/10 hover:border-white/20 cursor-pointer transition-all duration-300 rounded-lg p-4 md:p-5 shadow-lg"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -159,10 +159,10 @@ export function RoastModeTab({ userId }: RoastModeTabProps) {
                         }}
                       />
                       <div className="flex gap-2">
-                        <button className="flex-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/40 px-3 py-2 rounded-md text-xs md:text-sm font-bold transition-colors flex items-center justify-center gap-2">
+                        <button className="flex-1 bg-orange-600/80 hover:bg-orange-500 text-white px-3 py-2 rounded-lg text-xs md:text-sm font-bold transition-colors flex items-center justify-center gap-2">
                           <FaPlay className="text-xs" /> Play
                         </button>
-                        <button className="flex-1 bg-white/5 hover:bg-white/10 text-white border border-white/10 px-3 py-2 rounded-md text-xs md:text-sm font-bold transition-colors flex items-center justify-center gap-2">
+                        <button className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3 py-2 rounded-lg text-xs md:text-sm font-bold transition-colors flex items-center justify-center gap-2">
                           <FaDownload className="text-xs" /> Share
                         </button>
                       </div>
