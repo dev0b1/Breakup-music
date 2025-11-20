@@ -204,18 +204,18 @@ export default function AppPage() {
       </header>
 
       {/* Fixed Streak Bar - 60-70px */}
-      <div className="fixed top-14 md:top-16 left-0 right-0 z-40 bg-gradient-to-r from-purple-900/40 via-purple-800/40 to-amber-600/40 backdrop-blur-sm border-b border-white/10 h-16 md:h-[70px]">
+      <div className="fixed top-14 md:top-16 left-0 right-0 z-40 bg-gradient-to-r from-purple-900/80 via-purple-700/70 to-amber-500/60 backdrop-blur-md border-b-2 border-amber-500/30 h-16 md:h-[70px] shadow-lg">
         <div className="max-w-7xl mx-auto px-4 h-full flex flex-col justify-center">
           <div className="flex items-center justify-between md:justify-start gap-4">
             {/* Left: Streak Text */}
             <div className="flex-1 md:flex-initial">
-              <h2 className="text-xl md:text-2xl font-bold text-white leading-tight">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-black text-white leading-tight drop-shadow-lg">
                 {getStreakMessage()}
               </h2>
               {!hasCheckedInToday && streak > 0 && (
                 <button 
                   onClick={() => setCurrentTab("daily")}
-                  className="text-xs md:text-sm text-exroast-gold hover:text-amber-400 transition-colors mt-0.5"
+                  className="text-xs md:text-sm text-amber-300 hover:text-amber-100 transition-colors mt-0.5 font-bold"
                 >
                   Check in to make it {streak + 1} →
                 </button>
@@ -223,7 +223,7 @@ export default function AppPage() {
               {!hasCheckedInToday && streak === 0 && (
                 <button 
                   onClick={() => setCurrentTab("daily")}
-                  className="text-xs md:text-sm text-exroast-gold hover:text-amber-400 transition-colors mt-0.5"
+                  className="text-xs md:text-sm text-amber-300 hover:text-amber-100 transition-colors mt-0.5 font-bold"
                 >
                   Check in today →
                 </button>
@@ -231,7 +231,7 @@ export default function AppPage() {
             </div>
             
             {/* Right: Fire Emojis */}
-            <div className="text-2xl md:text-3xl">
+            <div className="text-xl sm:text-2xl md:text-3xl drop-shadow-lg">
               {getFireEmojis()}
             </div>
           </div>
@@ -239,47 +239,49 @@ export default function AppPage() {
       </div>
 
       {/* Desktop Tab Navigation */}
-      <div className="hidden md:block fixed top-[106px] lg:top-[118px] left-0 right-0 z-40 bg-black/95 border-b border-white/10">
+      <div className="hidden md:block fixed top-[106px] lg:top-[118px] left-0 right-0 z-40 bg-black/95 border-b-2 border-white/10 shadow-xl">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-1">
+          <div className="flex justify-center gap-8">
             <button
               onClick={() => setCurrentTab("roast")}
-              className={`relative px-6 py-3 font-bold text-base transition-all duration-200 ${
+              className={`relative px-8 py-4 font-black text-lg transition-all duration-200 ${
                 currentTab === "roast"
-                  ? "text-exroast-pink border-b-2 border-exroast-pink"
-                  : "text-gray-400 hover:text-white"
+                  ? "text-exroast-pink border-b-4 border-exroast-pink"
+                  : "text-gray-500 hover:text-white border-b-4 border-transparent"
               }`}
             >
               <span className="flex items-center gap-2">
-                🔥 Roast
+                🔥 Roast Mode
               </span>
             </button>
             <button
               onClick={() => setCurrentTab("daily")}
-              className={`relative px-6 py-3 font-bold text-base transition-all duration-200 ${
+              className={`relative px-8 py-4 font-black text-lg transition-all duration-200 ${
                 currentTab === "daily"
-                  ? "text-purple-400 border-b-2 border-purple-400"
-                  : "text-gray-400 hover:text-white"
+                  ? "text-purple-400 border-b-4 border-purple-400"
+                  : "text-gray-500 hover:text-white border-b-4 border-transparent"
               }`}
             >
-              <span className="flex items-center gap-2">
-                💪 Daily
+              <span className="flex items-center gap-3">
+                💪 Daily Glow-Up
+                {!hasCheckedInToday && (
+                  <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-black rounded-full">
+                    1
+                  </span>
+                )}
               </span>
-              {!hasCheckedInToday && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-              )}
             </button>
           </div>
         </div>
       </div>
 
       {/* Tab Content */}
-      <main className="pt-32 md:pt-40 lg:pt-44 px-4 pb-8 relative z-10">
-        <div className={`max-w-4xl mx-auto transition-colors duration-300 ${
+      <main className="pt-32 md:pt-40 lg:pt-48 px-3 sm:px-4 md:px-6 pb-8 relative z-10">
+        <div className={`max-w-5xl mx-auto transition-colors duration-300 ${
           currentTab === "daily" 
-            ? "bg-gradient-to-b from-transparent via-purple-900/10 to-purple-900/20" 
-            : "bg-gradient-to-b from-transparent via-red-900/10 to-black/50"
-        } rounded-2xl p-4 md:p-6`}>
+            ? "bg-gradient-to-b from-purple-900/30 via-purple-800/20 to-purple-900/30" 
+            : "bg-gradient-to-b from-red-900/30 via-red-800/20 to-black/60"
+        } rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl border border-white/10`}>
           <AnimatePresence mode="wait">
             {currentTab === "daily" && (
               <motion.div
