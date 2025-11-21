@@ -1,5 +1,5 @@
 import { db } from '@/server/db';
-import { templates, subscriptions, roasts, users, userPreferences, dailyQuotes, audioNudges, dailyCheckIns } from '@/src/db/schema';
+import { templates, subscriptions, roasts, users, userPreferences, dailyQuotes, audioNudges, dailyCheckIns, audioGenerationJobs } from '@/src/db/schema';
 import { eq, desc, and, gte, sql } from 'drizzle-orm';
 import { Template } from './template-matcher';
 
@@ -397,6 +397,88 @@ export async function saveAudioNudge(
   }
 }
 
+// Job queue helpers
+export async function enqueueAudioJob(job: { userId: string; type: string; payload: any }): Promise<string | null> {
+  try {
+    const result = await db.insert(audioGenerationJobs).values({
+      userId: job.userId,
+      type: job.type,
+      payload: JSON.stringify(job.payload),
+    }).returning({ id: audioGenerationJobs.id });
+
+    return result?.[0]?.id || null;
+  } catch (error) {
+    console.error('Error enqueueing audio job:', error);
+    return null;
+  }
+}
+
+export async function claimPendingJob(): Promise<any | null> {
+  try {
+    // Atomically find one pending job and mark it processing
+    const claimed = await db.update(audioGenerationJobs)
+      .set({ status: 'processing', attempts: sql`attempts + 1`, updatedAt: new Date() })
+      .where(eq(audioGenerationJobs.status, 'pending'))
+      .returning({ id: audioGenerationJobs.id, userId: audioGenerationJobs.userId, type: audioGenerationJobs.type, payload: audioGenerationJobs.payload, attempts: audioGenerationJobs.attempts });
+
+    // returning may return multiple; pick the first
+    if (claimed && claimed.length > 0) {
+      return claimed[0];
+    }
+    return null;
+  } catch (error) {
+    console.error('Error claiming pending job:', error);
+    return null;
+  }
+}
+
+export async function markJobSucceeded(jobId: string, resultUrl: string): Promise<boolean> {
+  try {
+    await db.update(audioGenerationJobs).set({ status: 'succeeded', resultUrl, updatedAt: new Date() }).where(eq(audioGenerationJobs.id, jobId));
+    return true;
+  } catch (error) {
+    console.error('Error marking job succeeded:', error);
+    return false;
+  }
+}
+
+export async function markJobFailed(jobId: string, errorMsg: string): Promise<boolean> {
+  try {
+    await db.update(audioGenerationJobs).set({ status: 'failed', error: errorMsg, updatedAt: new Date() }).where(eq(audioGenerationJobs.id, jobId));
+    return true;
+  } catch (error) {
+    console.error('Error marking job failed:', error);
+    return false;
+  }
+}
+
+export async function reserveCredit(userId: string): Promise<boolean> {
+  try {
+    const updated = await db.update(subscriptions)
+      .set({ creditsRemaining: sql`credits_remaining - 1`, updatedAt: new Date() })
+      .where(and(eq(subscriptions.userId, userId), sql`credits_remaining > 0`))
+      .returning({ id: subscriptions.id, creditsRemaining: subscriptions.creditsRemaining });
+
+    return !!(updated && updated.length > 0);
+  } catch (error) {
+    console.error('Error reserving credit:', error);
+    return false;
+  }
+}
+
+export async function refundCredit(userId: string, amount: number = 1): Promise<boolean> {
+  try {
+    const subscription = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1);
+    if (!subscription || subscription.length === 0) return false;
+    const current = subscription[0].creditsRemaining || 0;
+    await db.update(subscriptions).set({ creditsRemaining: current + amount, updatedAt: new Date() }).where(eq(subscriptions.userId, userId));
+    return true;
+  } catch (error) {
+    console.error('Error refunding credit:', error);
+    return false;
+  }
+}
+
 export async function getUserStreak(userId: string): Promise<{
   currentStreak: number;
   longestStreak: number;
@@ -462,7 +544,7 @@ export async function saveDailyCheckIn(checkIn: {
   message: string;
   motivationText?: string;
   motivationAudioUrl?: string;
-}): Promise<boolean> {
+}): Promise<string | null> {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -477,16 +559,17 @@ export async function saveDailyCheckIn(checkIn: {
       .limit(1);
 
     if (existingCheckIn.length > 0) {
-      return false;
+      return null;
     }
 
-    await db.insert(dailyCheckIns).values({
+    const insertResult = await db.insert(dailyCheckIns).values({
       userId: checkIn.userId,
       mood: checkIn.mood,
       message: checkIn.message,
       motivationText: checkIn.motivationText,
       motivationAudioUrl: checkIn.motivationAudioUrl
-    });
+    }).returning({ id: dailyCheckIns.id });
+    const insertedId = insertResult?.[0]?.id || null;
     // Ensure a users row exists so updateUserStreak can operate correctly.
     // Some auth flows may not have created the `users` table row (anonymous or legacy sign-ups).
     try {
@@ -497,10 +580,10 @@ export async function saveDailyCheckIn(checkIn: {
     }
 
     await updateUserStreak(checkIn.userId);
-    return true;
+    return insertedId;
   } catch (error) {
     console.error('Error saving daily check-in:', error);
-    return false;
+    return null;
   }
 }
 

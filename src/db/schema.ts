@@ -12,6 +12,22 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at').defaultNow().notNull().$onUpdate(() => new Date()),
 });
 
+export const audioGenerationJobs = pgTable('audio_generation_jobs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull(),
+  type: text('type').notNull(), // 'daily' | 'song' | etc
+  payload: text('payload').notNull(), // JSON payload
+  status: text('status').default('pending').notNull(), // pending | processing | succeeded | failed
+  resultUrl: text('result_url'),
+  error: text('error'),
+  attempts: integer('attempts').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull().$onUpdate(() => new Date()),
+}, (table) => ({
+  userIdIdx: index('audio_generation_jobs_user_id_idx').on(table.userId),
+  statusIdx: index('audio_generation_jobs_status_idx').on(table.status),
+}));
+
 export const songs = pgTable('songs', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   title: text('title').notNull(),

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { saveDailyCheckIn, getUserStreak, getUserPreferences, getUserSubscriptionStatus, getTodayCheckIn, getUserCredits, deductCredit, incrementAudioNudgeCount, saveAudioNudge } from '@/lib/db-service';
-import { createSunoNudgeClient } from '@/lib/suno-nudge';
+import { saveDailyCheckIn, getUserStreak, getUserPreferences, getUserSubscriptionStatus, getTodayCheckIn, getUserCredits, deductCredit, incrementAudioNudgeCount, saveAudioNudge, enqueueAudioJob, reserveCredit } from '@/lib/db-service';
 
 const MOTIVATIONS: Record<string, string> = {
   hurting: "Listen… it's okay to hurt. But don't let that pain define you. They couldn't handle your energy, your growth, your realness. You're not broken — you're becoming. Keep choosing yourself. You're literally unstoppable right now.",
@@ -29,12 +28,22 @@ export async function POST(request: NextRequest) {
 
     const motivation = MOTIVATIONS[mood] || MOTIVATIONS.unstoppable;
 
-    // Decide whether to generate audio: honor client preferAudio flag but only proceed
-    // if user has opted in or is Pro. We also compute a thumbnail for unsubscribed users
-    // and return a previewDuration so the client enforces a 15s preview + upsell.
-  let motivationAudioUrl: string | undefined = undefined;
-  let audioLimitReached = false;
-  let audioLimitReason: string | null = null;
+    // Save the daily check-in first so we have a check-in id to reference from the job.
+    let motivationAudioUrl: string | undefined = undefined;
+    let audioLimitReached = false;
+    let audioLimitReason: string | null = null;
+
+    const savedCheckInId = await saveDailyCheckIn({
+      userId,
+      mood,
+      message,
+      motivationText: motivation,
+      motivationAudioUrl: undefined
+    });
+
+    if (!savedCheckInId) {
+      return NextResponse.json({ error: 'already_checked_in', message: 'User already checked in today' }, { status: 409 });
+    }
 
     // Fetch preferences/subscription once and reuse below
     const prefs = await getUserPreferences(userId);
@@ -43,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     if (preferAudio && audioAllowed) {
       try {
-        // Check user's credits / free usage before generating to avoid wasted API consumption
+        // Check user's credits / free usage before enqueueing a job to avoid wasted API consumption
         const credits = await getUserCredits(userId);
         const isFree = credits.tier === 'free';
         const isPro = credits.tier === 'unlimited' || credits.tier === 'one-time';
@@ -63,40 +72,49 @@ export async function POST(request: NextRequest) {
           const streakData = await getUserStreak(userId);
           const dayNumber = (streakData?.currentStreak || 0) + 1;
 
-          const suno = createSunoNudgeClient();
-          const result = await suno.generateDailyNudge({ userStory: message, mood, motivationText: motivation, dayNumber });
-          motivationAudioUrl = result.audioUrl;
-
-          // Record usage & deduct credits
-          try {
-            if (isFree) {
-              await incrementAudioNudgeCount(userId);
-            } else if (isPro) {
-              await deductCredit(userId);
+          // Reserve a credit for pro users so we don't over-commit. For free users we
+          // increment their weekly usage counter now.
+          let reservedCredit = false;
+          if (isPro) {
+            const ok = await reserveCredit(userId);
+            if (!ok) {
+              console.log('Failed to reserve credit for user', userId);
+              audioLimitReached = true;
+              audioLimitReason = 'pro_no_credits';
+            } else {
+              reservedCredit = true;
             }
+          } else if (isFree) {
+            // increment their weekly count now (best-effort)
+            try { await incrementAudioNudgeCount(userId); } catch (e) { console.warn('Failed to increment free nudge count', e); }
+          }
 
-            // Save an audio nudge record for analytics and billing tracking
-            await saveAudioNudge(userId, message, dayNumber, motivationAudioUrl || '', motivation, isPro ? 1 : 0);
-          } catch (usageError) {
-            console.warn('Failed to record audio usage or deduct credit:', usageError);
+          if (!audioLimitReached) {
+            const payload = {
+              userId,
+              mood,
+              message,
+              motivationText: motivation,
+              dayNumber,
+              checkInId: savedCheckInId,
+              reservedCredit
+            };
+
+            const jobId = await enqueueAudioJob({ userId, type: 'daily', payload });
+            if (!jobId) {
+              console.error('Failed to enqueue audio job');
+              // if we reserved a credit, refund it
+              if (reservedCredit) {
+                try { await reserveCredit(userId); } catch (e) { console.warn('Failed to refund reserved credit after enqueue failure', e); }
+              }
+            } else {
+              console.log('Enqueued audio job', jobId);
+            }
           }
         }
       } catch (err) {
-        console.error('Audio generation failed, continuing with text-only motivation:', err);
-        // fall through to save text-only motivation
+        console.error('Failed to enqueue audio generation job:', err);
       }
-    }
-
-    const saved = await saveDailyCheckIn({
-      userId,
-      mood,
-      message,
-      motivationText: motivation,
-      motivationAudioUrl: motivationAudioUrl
-    });
-
-    if (!saved) {
-      return NextResponse.json({ error: 'already_checked_in', message: 'User already checked in today' }, { status: 409 });
     }
 
     const streakData = await getUserStreak(userId);
