@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useRouter } from 'next/navigation';
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Header } from "@/components/Header";
@@ -30,6 +31,7 @@ interface Song {
 }
 
 export default function PreviewContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const songId = searchParams.get("songId");
   
@@ -341,7 +343,7 @@ export default function PreviewContent() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowSubscription(true)}
+                    onClick={() => router.push('/pricing')}
                     className="btn-primary rounded-none flex items-center space-x-2"
                   >
                     <FaDownload />

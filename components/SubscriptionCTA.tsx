@@ -86,6 +86,25 @@ export function SubscriptionCTA({ songId, autoOpenSingle }: SubscriptionCTAProps
   const handleSubscribe = async (tier: SubscriptionTier) => {
     setIsLoading(tier.id);
     try {
+      // Re-check auth state at click time to avoid stale `user` state causing
+      // an unnecessary redirect to the auth page when the user is actually signed in.
+      const { data: { user: freshUser } } = await supabase.auth.getUser();
+      let resolvedUser = freshUser;
+      if (!resolvedUser) {
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData?.session?.user) resolvedUser = sessionData.session.user;
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (!resolvedUser) {
+        // Let the checkout helper handle sign-in flow consistently
+        await openTierCheckout(tier.id, tier.priceId);
+        return;
+      }
+
       await openTierCheckout(tier.id, tier.priceId);
     } catch (err) {
       console.error('handleSubscribe error', err);
@@ -101,13 +120,26 @@ export function SubscriptionCTA({ songId, autoOpenSingle }: SubscriptionCTAProps
     setIsLoading("single");
 
     try {
-      if (!user) {
+      // Re-check auth state at click time to avoid stale `user` state causing
+      // an unnecessary redirect to the auth page when the user is actually signed in.
+      const { data: { user: freshUser } } = await supabase.auth.getUser();
+      let resolvedUser = freshUser;
+      if (!resolvedUser) {
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData?.session?.user) resolvedUser = sessionData.session.user;
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (!resolvedUser) {
         // If user isn't signed in, start Google OAuth and redirect to checkout after auth.
         const redirectPath = opts?.songId ? `/checkout?songId=${opts.songId}` : `/checkout?type=single`;
-            if (typeof window !== 'undefined') {
-            const redirectTo = `${window.location.origin}/auth/callback`;
-            try { document.cookie = `post_auth_redirect=${encodeURIComponent(redirectPath)}; path=/; max-age=600`; } catch (e) {}
-            await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+        if (typeof window !== 'undefined') {
+          const redirectTo = `${window.location.origin}/auth/callback`;
+          try { document.cookie = `post_auth_redirect=${encodeURIComponent(redirectPath)}; path=/; max-age=600`; } catch (e) {}
+          await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
         } else {
           const redirect = opts?.songId ? `/checkout?songId=${opts.songId}` : `/checkout?type=single`;
           router.push(`/auth?redirectTo=${encodeURIComponent(redirect)}`);
