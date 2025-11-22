@@ -66,21 +66,25 @@ function checkPaddleAvailability(): boolean {
 function setupPaddleCallbacks() {
   return {
     eventCallback: (data: any) => {
+      console.log('[Paddle Event]', data.name, data);
+      
       // Clean up the checkout flag when modal closes or completes
       if (data.name === 'checkout.closed' || data.name === 'checkout.completed') {
+        console.log('[Paddle Event] Clearing inCheckout flag due to:', data.name);
         safeLocalStorage.removeItem('inCheckout');
       }
-      
-      // Optional: Log checkout events for debugging
-      console.log('Paddle event:', data.name);
     }
   };
 }
 
 export async function openSingleCheckout(opts?: SingleCheckoutOpts) {
+  console.log('[openSingleCheckout] Starting with opts:', opts);
+  
   const user = await resolveUser();
+  console.log('[openSingleCheckout] User resolved:', user ? `${user.email} (${user.id})` : 'null');
 
   if (!user) {
+    console.log('[openSingleCheckout] User is null, redirecting to /pricing');
     // Redirect to pricing page for explicit sign-in
     if (typeof window !== 'undefined') {
       const payload: IntendedPurchase = {
@@ -94,9 +98,14 @@ export async function openSingleCheckout(opts?: SingleCheckoutOpts) {
     return;
   }
 
-  if (!checkPaddleAvailability()) return;
+  console.log('[openSingleCheckout] Checking Paddle availability...');
+  if (!checkPaddleAvailability()) {
+    console.error('[openSingleCheckout] Paddle not available');
+    return;
+  }
 
   const singlePriceId = process.env.NEXT_PUBLIC_PADDLE_PRICE_SINGLE;
+  console.log('[openSingleCheckout] singlePriceId:', singlePriceId);
 
   if (!singlePriceId) {
     console.error('Single price ID not configured');
@@ -117,22 +126,31 @@ export async function openSingleCheckout(opts?: SingleCheckoutOpts) {
     }
   };
 
+  console.log('[openSingleCheckout] Payload created:', { successUrl: payload.settings.successUrl, customData: payload.customData });
+
   // Mark checkout as in progress
   safeLocalStorage.setItem('inCheckout', 'true');
+  console.log('[openSingleCheckout] Set localStorage.inCheckout = true');
 
   try {
+    console.log('[openSingleCheckout] Calling Paddle.Checkout.open()...');
     (window as any).Paddle.Checkout.open(payload);
+    console.log('[openSingleCheckout] Paddle.Checkout.open() called successfully');
   } catch (error) {
-    console.error('Failed to open Paddle checkout:', error);
+    console.error('[openSingleCheckout] Error opening Paddle checkout:', error);
     safeLocalStorage.removeItem('inCheckout');
     alert('Failed to open payment system. Please try again.');
   }
 }
 
 export async function openTierCheckout(tierId: string, priceId?: string) {
+  console.log('[openTierCheckout] Starting with tierId:', tierId, 'priceId:', priceId);
+  
   const user = await resolveUser();
+  console.log('[openTierCheckout] User resolved:', user ? `${user.email} (${user.id})` : 'null');
 
   if (!user) {
+    console.log('[openTierCheckout] User is null, redirecting to /pricing');
     // Redirect to pricing page for explicit sign-in
     if (typeof window !== 'undefined') {
       const payload: IntendedPurchase = {
@@ -147,9 +165,14 @@ export async function openTierCheckout(tierId: string, priceId?: string) {
     return;
   }
 
-  if (!checkPaddleAvailability()) return;
+  console.log('[openTierCheckout] Checking Paddle availability...');
+  if (!checkPaddleAvailability()) {
+    console.error('[openTierCheckout] Paddle not available');
+    return;
+  }
 
   const priceToUse = priceId || process.env.NEXT_PUBLIC_PADDLE_PRICE_PREMIUM;
+  console.log('[openTierCheckout] priceToUse:', priceToUse);
 
   if (!priceToUse) {
     console.error('Tier priceId not configured');
@@ -169,13 +192,18 @@ export async function openTierCheckout(tierId: string, priceId?: string) {
     }
   };
 
+  console.log('[openTierCheckout] Payload created:', { successUrl: payload.settings.successUrl, customData: payload.customData });
+
   // Mark checkout as in progress
   safeLocalStorage.setItem('inCheckout', 'true');
+  console.log('[openTierCheckout] Set localStorage.inCheckout = true');
 
   try {
+    console.log('[openTierCheckout] Calling Paddle.Checkout.open()...');
     (window as any).Paddle.Checkout.open(payload);
+    console.log('[openTierCheckout] Paddle.Checkout.open() called successfully');
   } catch (error) {
-    console.error('Failed to open Paddle checkout:', error);
+    console.error('[openTierCheckout] Error opening Paddle checkout:', error);
     safeLocalStorage.removeItem('inCheckout');
     alert('Failed to open payment system. Please try again.');
   }
