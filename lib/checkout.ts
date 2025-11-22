@@ -38,14 +38,38 @@ const safeLocalStorage = {
 async function resolveUser() {
   const supabase = createClientComponentClient();
   
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) return user;
-
+  // First try the client-side SDK (this will be populated when the client
+  // has a local session / tokens in browser storage).
   try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    return sessionData?.session?.user || null;
+    const { data } = await supabase.auth.getSession();
+    const sessionData = (data as any)?.session;
+    const userFromSession = sessionData?.user;
+    if (userFromSession) return userFromSession;
   } catch (e) {
-    console.warn('Failed to get session', e);
+    // ignore and continue to server-side check
+    console.debug('[resolveUser] supabase.auth.getSession() failed', e);
+  }
+
+  // If the client SDK doesn't have a user (common when tokens are stored as
+  // httpOnly cookies by server-side exchanges), fall back to asking the server
+  // for the current session. This keeps behaviour consistent with middleware
+  // which uses server-side cookie-based auth.
+  try {
+    const res = await fetch('/api/session');
+    if (res.ok) {
+      const body = await res.json();
+      if (body?.user) return body.user;
+    }
+  } catch (e) {
+    console.debug('[resolveUser] /api/session fetch failed', e);
+  }
+
+  // As a last-ditch attempt, ask the client SDK for the user object.
+  try {
+    const { data: { user: clientUser } } = await supabase.auth.getUser();
+    return clientUser || null;
+  } catch (e) {
+    console.warn('Failed to get user via client SDK', e);
     return null;
   }
 }
